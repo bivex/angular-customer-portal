@@ -1,4 +1,19 @@
 /**
+ * Copyright (c) 2025 Bivex
+ *
+ * Author: Bivex
+ * Available for contact via email: support@b-b.top
+ * For up-to-date contact information:
+ * https://github.com/bivex
+ *
+ * Created: 2025-12-23T02:28:25
+ * Last Updated: 2025-12-23T02:28:25
+ *
+ * Licensed under the MIT License.
+ * Commercial licensing available upon request.
+ */
+
+/**
  * Integration test demonstrating refresh token fixes
  * This test shows that the authentication system now properly handles
  * token refresh failures with appropriate error messages.

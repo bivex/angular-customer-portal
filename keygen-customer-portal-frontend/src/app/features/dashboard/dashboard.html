@@ -1,0 +1,40 @@
+<!-- Loading State -->
+@if (authState$ | async; as authState) {
+  @if (authState.isLoading) {
+    <app-dashboard-loading [statsGridCols]="statsGridCols()"></app-dashboard-loading>
+  } @else {
+    <!-- Main Dashboard Layout -->
+    <main class="flex min-h-screen bg-gray-50 dark:bg-neutral-900">
+      <div class="flex-1 p-6 sm:p-8 lg:p-10">
+        <div class="max-w-7xl mx-auto w-full">
+          <!-- Dashboard Header -->
+          <app-dashboard-header
+            [dashboardTitle]="dashboardTitle"
+            [activeSection]="activeSection()"
+            (sectionClick)="scrollToSection($event)"
+          >
+          </app-dashboard-header>
+
+          <!-- Welcome Section -->
+          <app-dashboard-welcome
+            [authState]="authState"
+            [motivationalMessage]="motivationalMessage()"
+            [statsGridCols]="statsGridCols()"
+            (sectionClick)="scrollToSection($event)"
+          >
+          </app-dashboard-welcome>
+
+          <!-- Usage Insights -->
+          <app-usage-insights></app-usage-insights>
+
+          <!-- Quick Actions & Recent Activity -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <app-quick-actions (actionClick)="handleActionClick($event)"></app-quick-actions>
+            <app-recent-activity></app-recent-activity>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  }
+}

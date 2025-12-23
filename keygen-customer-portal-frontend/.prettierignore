@@ -1,0 +1,24 @@
+# Ignore artifacts:
+dist
+build
+out
+.angular/
+
+# Ignore dependencies:
+node_modules/
+coverage/
+
+# Ignore logs:
+*.log
+
+# Ignore build configs
+angular.json
+
+# Ignore generated documentation
+documentation/
+
+# Ignore dotfiles
+.idea
+.vscode
+.git
+.husky

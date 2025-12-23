@@ -1,0 +1,20 @@
+# Authentication state files
+.auth/
+*.json
+
+# Test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Screenshots and videos
+screenshots/
+videos/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log

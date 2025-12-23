@@ -1,0 +1,105 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+/.angular
+
+# Package managers
+/node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+.pnpm-debug.log*
+
+# Test results and reports
+test_results/
+test-results/
+playwright-report/
+html-report/
+allure-results/
+junit-results/
+coverage/
+.nyc_output/
+*.lcov
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs and debugging
+*.log
+errors.log
+backend.log
+*.pid
+logs/
+error-logs/
+
+# Security reports and analysis files
+angular_app_results.fpr
+angular_security_report.pdf
+angular_owasp_report.pdf
+bundle-analysis.html
+
+# Backups and temporary files
+backup/
+*.backup
+*.bak
+*.tmp
+*.temp
+src/environments/*.backup
+src/environments/*.temp.ts
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+
+# Security - Environment files and secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+src/environments/environment.prod.ts.backup
+
+# Build artifacts and cache
+.cache/
+.parcel-cache/
+.vite/
+.turbo/
+
+# Husky
+.husky/_

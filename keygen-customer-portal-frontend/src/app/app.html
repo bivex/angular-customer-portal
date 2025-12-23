@@ -1,0 +1,18 @@
+<div class="min-h-screen bg-background text-foreground selection-luxury-black">
+  <!-- Loading spinner while checking authentication -->
+  @if (isLoading) {
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="flex items-center space-x-2">
+        <app-icon name="arrow-path" size="lg" class="animate-spin text-primary"></app-icon>
+        <span class="text-muted-foreground">{{ 'common.loading' | translate }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Main app content with router outlet for auth and layout routes -->
+  @if (!isLoading) {
+    <div>
+      <router-outlet></router-outlet>
+    </div>
+  }
+</div>

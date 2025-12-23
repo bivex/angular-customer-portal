@@ -1,0 +1,56 @@
+{
+  "app": {
+    "title": "Keygen Customer Portal",
+    "welcome": "Welcome to Keygen Customer Portal"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full Name",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "namePlaceholder": "Enter your full name",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "signInWith": "Sign in with {{provider}}",
+    "requiredFields": "Please fill in all required fields",
+    "loginFailed": "Login failed. Please try again.",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "createAccount": "Create Account",
+    "joinUs": "Join us today",
+    "nameRequired": "Full name is required",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "registrationError": "Registration Error"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "or": "or"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}!",
+    "welcome.morning": "Good morning, {{name}}!",
+    "welcome.afternoon": "Good afternoon, {{name}}!",
+    "welcome.evening": "Good evening, {{name}}!",
+    "motivation": {
+      "ready": "Ready to get started?",
+      "productive": "Let's be productive today!",
+      "explore": "Time to explore new possibilities!"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 Keygen Customer Portal. All rights reserved."
+  }
+}

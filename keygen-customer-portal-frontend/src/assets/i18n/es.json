@@ -1,0 +1,54 @@
+{
+  "app": {
+    "title": "Portal de Clientes Keygen",
+    "welcome": "Bienvenido al Portal de Clientes Keygen"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signOut": "Cerrar Sesión",
+    "signUp": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "name": "Nombre completo",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "namePlaceholder": "Ingresa tu nombre completo",
+    "rememberMe": "Recordarme",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signInWith": "Iniciar sesión con {{provider}}",
+    "requiredFields": "Por favor completa todos los campos requeridos",
+    "loginFailed": "Error al iniciar sesión. Por favor intenta de nuevo.",
+    "noAccount": "¿No tienes una cuenta?",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "createAccount": "Crear cuenta",
+    "joinUs": "Únete a nosotros hoy",
+    "nameRequired": "El nombre completo es requerido",
+    "emailRequired": "El correo electrónico es requerido",
+    "emailInvalid": "Por favor ingresa un correo electrónico válido",
+    "passwordRequired": "La contraseña es requerida",
+    "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+    "registrationError": "Error de Registro"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "or": "o"
+  },
+  "dashboard": {
+    "title": "Panel de Control",
+    "welcome": "¡Bienvenido de vuelta, {{name}}!",
+    "welcome.morning": "¡Buenos días, {{name}}!",
+    "welcome.afternoon": "¡Buenas tardes, {{name}}!",
+    "welcome.evening": "¡Buenas noches, {{name}}!",
+    "motivation": {
+      "ready": "¿Listo para comenzar?",
+      "productive": "¡Seamos productivos hoy!",
+      "explore": "¡Es hora de explorar nuevas posibilidades!"
+    }
+  }
+}
+

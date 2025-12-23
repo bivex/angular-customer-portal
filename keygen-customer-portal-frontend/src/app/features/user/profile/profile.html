@@ -1,0 +1,78 @@
+<z-layout>
+  <z-content class="min-h-screen">
+    <!-- Decorative background elements -->
+    <div class="absolute inset-0">
+      <div class="absolute top-20 left-10 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-20 right-10 w-96 h-96 bg-teal-400/10 rounded-full blur-3xl"></div>
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-emerald-400/5 to-cyan-400/5 rounded-full blur-3xl"
+      ></div>
+    </div>
+
+    <div class="container mx-auto px-4 py-12 max-w-2xl relative z-10">
+      <!-- Header Section -->
+      <div class="text-center mb-12">
+        <div class="flex flex-col items-center space-y-6">
+          <div class="relative">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full blur-lg opacity-30 scale-110"
+            ></div>
+            <z-avatar
+              size="xl"
+              class="ring-4 ring-white/20 shadow-2xl relative bg-gradient-to-br from-emerald-500 to-teal-600 p-4"
+            >
+              <z-icon zType="user" size="xl" class="text-white drop-shadow-lg"></z-icon>
+            </z-avatar>
+          </div>
+          <div class="space-y-3">
+            <h1
+              class="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent"
+            >
+              Profile Settings
+            </h1>
+            <p class="text-slate-600 dark:text-slate-400 max-w-lg text-lg leading-relaxed">
+              Keep your information up to date and secure
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Form -->
+      <div>Test form content</div>
+
+      <!-- Navigation Links -->
+      <div class="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+        <button
+          [routerLink]="'/user/change-password'"
+          class="inline-flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-medium rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300 group"
+        >
+          <z-icon
+            zType="lock"
+            class="group-hover:scale-110 transition-transform duration-300"
+          ></z-icon>
+          <span>Change Password</span>
+        </button>
+
+        <button
+          [routerLink]="'/dashboard'"
+          class="inline-flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-medium rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300 group"
+        >
+          <z-icon
+            zType="layout-dashboard"
+            class="group-hover:scale-110 transition-transform duration-300"
+          ></z-icon>
+          <span>Back to Dashboard</span>
+        </button>
+      </div>
+    </div>
+
+    <z-confirm-modal
+      [isOpen]="showConfirmModal"
+      [title]="'Unsaved Changes'"
+      [message]="'You have unsaved changes. Do you want to save them before leaving?'"
+      (confirm)="confirmSave()"
+      (cancelled)="confirmCancel()"
+    >
+    </z-confirm-modal>
+  </z-content>
+</z-layout>

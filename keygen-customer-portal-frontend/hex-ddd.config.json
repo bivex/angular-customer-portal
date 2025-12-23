@@ -1,0 +1,45 @@
+{
+  "rules": {
+    "component-max-lines": {
+      "severity": "warning",
+      "threshold": 300
+    },
+    "service-max-methods": {
+      "severity": "error",
+      "threshold": 10
+    },
+    "complexity-threshold": {
+      "severity": "info",
+      "threshold": 10
+    },
+    "missing-onpush-strategy": {
+      "severity": "warning",
+      "enabled": true
+    },
+    "missing-trackby": {
+      "severity": "info",
+      "enabled": true
+    },
+    "xss-vulnerability": {
+      "severity": "error",
+      "enabled": true
+    }
+  },
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.d.ts",
+    "**/node_modules/**",
+    "**/dist/**",
+    "src/app/infrastructure/utils/**/*.ts",
+    "src/app/core/utils/**/*.ts"
+  ],
+  "output": {
+    "format": "console",
+    "showDetails": true,
+    "showSummary": true
+  },
+  "performance": {
+    "maxConcurrency": 4,
+    "maxFiles": 1000
+  }
+}

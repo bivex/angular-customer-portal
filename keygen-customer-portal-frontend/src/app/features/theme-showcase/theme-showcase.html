@@ -1,0 +1,284 @@
+<div class="min-h-screen bg-background text-foreground">
+  <!-- Header -->
+  <div class="border-b border-border bg-card">
+    <div class="container mx-auto px-4 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-card-foreground">🎨 ZardUI Theme Showcase</h1>
+          <p class="text-muted-foreground mt-1">
+            Complete demonstration of all ZardUI components and colors
+          </p>
+        </div>
+
+        <!-- Theme Toggle -->
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-muted-foreground">
+            {{ isDark ? '🌙 Dark' : '☀️ Light' }} Theme
+          </span>
+          <button
+            z-button
+            [variant]="'outline'"
+            (click)="toggleTheme()"
+            class="flex items-center gap-2"
+          >
+            <z-icon [zType]="isDark ? 'sun' : 'moon'" zSize="sm"></z-icon>
+            {{ isDark ? 'Light' : 'Dark' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8 space-y-12">
+    <!-- Color Palette -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6 text-foreground">🎨 Color Palette</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          *ngFor="let color of colorPalette"
+          class="p-4 rounded-lg border border-border {{ color.bg }} {{ color.text }}"
+        >
+          <div class="font-medium">{{ color.name }}</div>
+          <div class="text-sm opacity-75 mt-1">{{ color.bg }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mature Blend Palette -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6 text-foreground">🌈 Mature Blend Palette</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div
+          *ngFor="let shade of matureBlendShades"
+          class="p-4 rounded-lg border border-border {{ shade.bg }} text-center"
+          [class]="shade.shade >= 500 ? 'text-white' : 'text-foreground'"
+        >
+          <div class="font-medium">{{ shade.shade }}</div>
+          <div class="text-xs opacity-75 mt-1">{{ shade.bg }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6 text-foreground">🔘 Buttons</h2>
+
+      <!-- Button Variants -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium mb-4 text-foreground">Variants</h3>
+        <div class="flex flex-wrap gap-3">
+          <button
+            *ngFor="let variant of buttonVariants"
+            z-button
+            [variant]="variant.variant"
+            class="flex items-center gap-2"
+          >
+            <z-icon zType="star" zSize="sm"></z-icon>
+            {{ variant.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Button Sizes -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium mb-4 text-foreground">Sizes</h3>
+        <div class="flex flex-wrap items-end gap-3">
+          <button
+            *ngFor="let size of buttonSizes"
+            z-button
+            [size]="size.size"
+            class="flex items-center gap-2"
+          >
+            <z-icon zType="heart" zSize="sm"></z-icon>
+            {{ size.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Button States -->
+      <div>
+        <h3 class="text-lg font-medium mb-4 text-foreground">States</h3>
+        <div class="flex flex-wrap gap-3">
+          <button z-button [disabled]="true" class="flex items-center gap-2">
+            <z-icon zType="x" zSize="sm"></z-icon>
+            Disabled
+          </button>
+          <button z-button class="flex items-center gap-2">
+            <z-icon zType="check" zSize="sm"></z-icon>
+            Enabled
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form Components -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6 text-foreground">📝 Form Components</h2>
+
+      <div z-card class="max-w-md">
+        <div class="space-y-6">
+          <!-- Input Fields -->
+          <div class="space-y-4">
+            <div>
+              <label
+                for="email"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >Email Address</label
+              >
+              <input
+                z-input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                [(ngModel)]="formData.email"
+                class="mt-2"
+              />
+            </div>
+
+            <div>
+              <label
+                for="password"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >Password</label
+              >
+              <input
+                z-input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                [(ngModel)]="formData.password"
+                class="mt-2"
+              />
+            </div>
+
+            <div>
+              <label
+                for="select"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >Select Option</label
+              >
+              <select z-input id="select" [(ngModel)]="formData.selectedOption" class="mt-2">
+                <option value="">Choose an option</option>
+                <option value="option1">Option 1</option>
+                <option value="option2">Option 2</option>
+                <option value="option3">Option 3</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Checkbox -->
+          <div class="flex items-center space-x-2">
+            <z-checkbox id="remember" [(ngModel)]="formData.rememberMe"></z-checkbox>
+            <label for="remember" class="text-sm font-normal"> Remember me for 30 days </label>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-3 pt-4">
+            <button z-button (click)="onSubmit()" class="flex-1">
+              <z-icon zType="circle-check" zSize="sm" class="mr-2"></z-icon>
+              Submit Form
+            </button>
+            <button z-button variant="outline">
+              <z-icon zType="circle-x" zSize="sm" class="mr-2"></z-icon>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cards and Layout -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6 text-foreground">📋 Cards & Layout</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Basic Card -->
+        <div z-card>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <z-icon zType="user" zSize="sm" class="text-primary-foreground"></z-icon>
+              </div>
+              <div>
+                <h3 class="font-medium text-card-foreground">Basic Card</h3>
+                <p class="text-sm text-muted-foreground">Simple card layout</p>
+              </div>
+            </div>
+            <button z-button size="sm" class="w-full">Action Button</button>
+          </div>
+        </div>
+
+        <!-- Accent Card -->
+        <div z-card class="border-accent bg-accent/5">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                <z-icon zType="star" zSize="sm" class="text-accent-foreground"></z-icon>
+              </div>
+              <div>
+                <h3 class="font-medium text-card-foreground">Accent Card</h3>
+                <p class="text-sm text-muted-foreground">With accent styling</p>
+              </div>
+            </div>
+            <button z-button size="sm" variant="outline" class="w-full">Outline Action</button>
+          </div>
+        </div>
+
+        <!-- Destructive Card -->
+        <div z-card class="border-destructive/20 bg-destructive/5">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-destructive rounded-lg flex items-center justify-center">
+                <z-icon
+                  zType="circle-alert"
+                  zSize="sm"
+                  class="text-destructive-foreground"
+                ></z-icon>
+              </div>
+              <div>
+                <h3 class="font-medium text-card-foreground">Warning Card</h3>
+                <p class="text-sm text-muted-foreground">With destructive styling</p>
+              </div>
+            </div>
+            <button z-button size="sm" variant="destructive" class="w-full">Delete Action</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Icons Showcase -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6 text-foreground">🎯 Icons Showcase</h2>
+
+      <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+        <div
+          *ngFor="let icon of icons"
+          class="flex flex-col items-center gap-2 p-3 bg-card border border-border rounded-lg hover:bg-accent/5 transition-colors"
+        >
+          <z-icon [zType]="icon" zSize="lg"></z-icon>
+          <span class="text-xs text-muted-foreground text-center">{{ icon }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6 text-foreground">🧭 Navigation</h2>
+
+      <div class="flex gap-4">
+        <button z-button [routerLink]="'/login'">
+          <z-icon zType="log-in" zSize="sm" class="mr-2"></z-icon>
+          Login Page
+        </button>
+        <button z-button [routerLink]="'/dashboard'">
+          <z-icon zType="layout-dashboard" zSize="sm" class="mr-2"></z-icon>
+          Dashboard
+        </button>
+        <button z-button variant="outline" [routerLink]="'/showcase'">
+          <z-icon zType="palette" zSize="sm" class="mr-2"></z-icon>
+          Theme Showcase
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

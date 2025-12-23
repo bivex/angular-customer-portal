@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/backup",
+    "types": []
+  },
+  "include": ["backup/**/*.ts"],
+  "exclude": ["backup/**/*.spec.ts"]
+}
+

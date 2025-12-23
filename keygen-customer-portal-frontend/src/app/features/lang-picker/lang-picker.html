@@ -1,0 +1,62 @@
+<div class="relative">
+  <!-- Language Selector Button -->
+  <button
+    type="button"
+    class="flex items-center space-x-2 px-4 py-3 rounded-md text-sm font-medium text-foreground hover:bg-accent transition-colors duration-200 min-h-[44px] min-w-[44px]"
+    (click)="toggleDropdown()"
+    [attr.aria-expanded]="dropdownOpen()"
+    aria-haspopup="listbox"
+  >
+    <span class="text-lg">{{ getCurrentLanguage().flag }}</span>
+    <span class="hidden sm:block">{{ getCurrentLanguage().name }}</span>
+    <svg
+      class="h-11 w-11 transition-transform duration-200"
+      [class.rotate-180]="dropdownOpen()"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      style="min-width: 44px; min-height: 44px"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  <!-- Dropdown Menu -->
+  <div
+    class="absolute right-0 z-50 mt-2 w-48 bg-card rounded-md shadow-lg ring-1 ring-border"
+    [class.hidden]="!dropdownOpen()"
+    role="listbox"
+    (clickOutside)="closeDropdown()"
+  >
+    <div class="py-1">
+      @for (lang of languages; track lang.code) {
+        <button
+          type="button"
+          class="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-150 min-h-[44px]"
+          [class.bg-accent]="lang.code === currentLang()"
+          [class.text-accent-foreground]="lang.code === currentLang()"
+          (click)="selectLanguage(lang.code)"
+          role="option"
+          [attr.aria-selected]="lang.code === currentLang()"
+        >
+          <span class="mr-3 text-lg">{{ lang.flag }}</span>
+          <span>{{ lang.name }}</span>
+          @if (lang.code === currentLang()) {
+            <svg
+              class="ml-auto h-11 w-11 text-primary"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              style="min-width: 44px; min-height: 44px"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>

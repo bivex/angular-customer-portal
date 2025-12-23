@@ -1,0 +1,1689 @@
+/**
+ * Copyright (c) 2025 Bivex
+ *
+ * Author: Bivex
+ * Available for contact via email: support@b-b.top
+ * For up-to-date contact information:
+ * https://github.com/bivex
+ *
+ * Created: 2025-12-22T05:35:22
+ * Last Updated: 2025-12-22T06:44:48
+ *
+ * Licensed under the MIT License.
+ * Commercial licensing available upon request.
+ */
+
+/**
+ * Tailwind CSS Configuration Extractor (v3 & v4 Compatible)
+ * Drop this script into Chrome DevTools console to extract Tailwind settings from any website
+ *
+ * Features:
+ * - Auto-detects Tailwind v3 or v4
+ * - Extracts CSS variables, colors, spacing, typography, etc.
+ * - Generates ready-to-use config (CSS for v4, JS for v3)
+ * - Supports modern color spaces (oklch, hsl, rgb)
+ *
+ * Usage: Copy and paste the entire script into the console and press Enter
+ */
+
+(function() {
+    console.log('🔍 Tailwind CSS Configuration Extractor (v3 & v4)');
+    console.log('=================================================');
+
+    // Check if Tailwind CSS is loaded with high precision
+    function isTailwindLoaded() {
+        let confidenceScore = 0;
+        const detectionResults = {};
+
+        // 1. Check for Tailwind CSS links (High confidence: +3)
+        const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+        const tailwindLinks = links.filter(link =>
+            link.href && (
+                link.href.includes('tailwindcss.com') ||
+                link.href.includes('unpkg.com/tailwindcss') ||
+                link.href.includes('jsdelivr.net') && link.href.includes('tailwindcss')
+            )
+        );
+        detectionResults.tailwindLinks = tailwindLinks.length > 0;
+        if (detectionResults.tailwindLinks) confidenceScore += 3;
+
+        // 2. Check for Tailwind in style tags (High confidence: +3)
+        const styleTags = Array.from(document.querySelectorAll('style'));
+        const tailwindStyles = styleTags.filter(style => {
+            try {
+                const content = style.textContent || '';
+                return content.includes('@tailwind') ||
+                       content.includes('@import "tailwindcss"') ||
+                       content.includes("@import 'tailwindcss'") ||
+                       content.includes('@theme') ||
+                       content.includes('--tw-') ||
+                       content.includes('--color-') || // v4 uses --color-* variables
+                       content.includes('tailwindcss');
+            } catch (e) {
+                return false;
+            }
+        });
+        detectionResults.tailwindStyles = tailwindStyles.length > 0;
+        if (detectionResults.tailwindStyles) confidenceScore += 3;
+
+        // 3. Check for Tailwind CDN scripts (High confidence: +3)
+        const scripts = Array.from(document.querySelectorAll('script'));
+        const tailwindScripts = scripts.filter(script =>
+            script.src && (
+                script.src.includes('cdn.tailwindcss.com') ||
+                script.src.includes('tailwindcss.com') ||
+                script.src.includes('unpkg.com/tailwindcss')
+            )
+        );
+        detectionResults.tailwindScripts = tailwindScripts.length > 0;
+        if (detectionResults.tailwindScripts) confidenceScore += 3;
+
+        // 4. Check for specific Tailwind CSS variables (Very High confidence: +4)
+        const root = document.documentElement;
+        const computedStyles = getComputedStyle(root);
+        const cssProps = Array.from(computedStyles);
+        const tailwindVars = cssProps.filter(prop =>
+            // v3 variables
+            (prop.startsWith('--tw-') &&
+             (prop.includes('ring') || prop.includes('border') || prop.includes('bg') ||
+              prop.includes('text') || prop.includes('space') || prop.includes('shadow'))) ||
+            // v4 variables use --color-*, --font-*, --radius-*, etc.
+            prop.startsWith('--color-') ||
+            prop.startsWith('--font-') ||
+            prop.startsWith('--radius-') ||
+            prop.startsWith('--spacing-') ||
+            prop.startsWith('--breakpoint-')
+        );
+        detectionResults.tailwindVars = tailwindVars.length > 5; // Need multiple vars
+        if (detectionResults.tailwindVars) confidenceScore += 4;
+
+        // 5. Check for Tailwind-specific class patterns (Medium confidence: +2 each)
+        function detectTailwindClasses(element) {
+            if (!element || !element.className) return false;
+
+            const classes = element.className.split(/\s+/);
+            const tailwindClassPatterns = [
+                // Layout & positioning
+                /^container$/,
+                /^flex$/,
+                /^grid$/,
+                /^hidden$/,
+                /^block$/,
+                /^inline$/,
+                /^inline-block$/,
+                /^absolute$/,
+                /^relative$/,
+                /^fixed$/,
+                /^sticky$/,
+                // Spacing
+                /^p-\d+$/,
+                /^m-\d+$/,
+                /^px-\d+$/,
+                /^py-\d+$/,
+                /^mx-\d+$/,
+                /^my-\d+$/,
+                // Width/Height
+                /^w-\d+$/,
+                /^h-\d+$/,
+                /^w-full$/,
+                /^h-full$/,
+                // Colors (Tailwind specific shades)
+                /^bg-(red|blue|green|yellow|purple|pink|indigo)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+                /^text-(red|blue|green|yellow|purple|pink|indigo)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+                /^border-(red|blue|green|yellow|purple|pink|indigo)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+                // Typography
+                /^text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/,
+                /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/,
+                /^leading-(3|4|5|6|7|8|9|10|none|tight|snug|normal|relaxed|loose)$/,
+                // Borders
+                /^rounded$/,
+                /^rounded-(sm|md|lg|xl|2xl|3xl|full)$/,
+                /^border$/,
+                /^border-(t|r|b|l)$/,
+                /^border-\d+$/,
+                // Shadows (Tailwind specific)
+                /^shadow$/,
+                /^shadow-(sm|md|lg|xl|2xl|inner)$/,
+                // Responsive prefixes
+                /^(sm|md|lg|xl|2xl):/,
+                // Dark mode
+                /^dark:/,
+                // Hover states
+                /^hover:/,
+                /^focus:/,
+                /^active:/
+            ];
+
+            return classes.some(cls =>
+                cls && tailwindClassPatterns.some(pattern => pattern.test(cls))
+            );
+        }
+
+        // Check multiple elements for better accuracy
+        const elementsToCheck = [
+            document.body,
+            document.documentElement,
+            ...Array.from(document.querySelectorAll('*')).slice(0, 20), // First 20 elements
+            ...Array.from(document.querySelectorAll('[class]')).slice(0, 10) // First 10 with classes
+        ];
+
+        const elementsWithTailwindClasses = elementsToCheck.filter(detectTailwindClasses);
+        detectionResults.tailwindClasses = elementsWithTailwindClasses.length >= 2; // Need at least 2 elements
+        if (detectionResults.tailwindClasses) confidenceScore += 2;
+
+        // 6. Check for Tailwind config or build artifacts (Low confidence: +1)
+        const hasTailwindConfig = Array.from(document.querySelectorAll('script')).some(script => {
+            try {
+                return script.textContent && (
+                    script.textContent.includes('tailwind.config') ||
+                    script.textContent.includes('module.exports')
+                );
+            } catch (e) {
+                return false;
+            }
+        });
+        detectionResults.tailwindConfig = hasTailwindConfig;
+        if (detectionResults.tailwindConfig) confidenceScore += 1;
+
+        // 7. Check for common Tailwind utility combinations (Medium confidence: +2)
+        const commonTailwindCombos = [
+            ['flex', 'items-center', 'justify-center'],
+            ['w-full', 'h-full'],
+            ['text-center', 'mx-auto'],
+            ['bg-white', 'dark:bg-gray-900'],
+            ['p-4', 'rounded-lg', 'shadow-md']
+        ];
+
+        const hasCombos = elementsToCheck.some(element => {
+            if (!element || !element.className) return false;
+            const classes = new Set(element.className.split(/\s+/));
+            return commonTailwindCombos.some(combo =>
+                combo.every(cls => classes.has(cls))
+            );
+        });
+        detectionResults.utilityCombos = hasCombos;
+        if (detectionResults.utilityCombos) confidenceScore += 2;
+
+        // Calculate confidence level
+        let confidenceLevel = 'Low';
+        if (confidenceScore >= 7) confidenceLevel = 'Very High';
+        else if (confidenceScore >= 5) confidenceLevel = 'High';
+        else if (confidenceScore >= 3) confidenceLevel = 'Medium';
+
+        console.log('🔍 Tailwind Detection Results (Enhanced Precision):');
+        console.log('   CSS Links:', detectionResults.tailwindLinks, tailwindLinks.length > 0 ? `(${tailwindLinks.length} found)` : '');
+        console.log('   Style Tags:', detectionResults.tailwindStyles, tailwindStyles.length > 0 ? `(${tailwindStyles.length} found)` : '');
+        console.log('   Script Tags:', detectionResults.tailwindScripts, tailwindScripts.length > 0 ? `(${tailwindScripts.length} found)` : '');
+        console.log('   CSS Variables:', detectionResults.tailwindVars, tailwindVars.length > 0 ? `(${tailwindVars.length} vars)` : '');
+        console.log('   Utility Classes:', detectionResults.tailwindClasses, elementsWithTailwindClasses.length > 0 ? `(${elementsWithTailwindClasses.length} elements)` : '');
+        console.log('   Config Scripts:', detectionResults.tailwindConfig);
+        console.log('   Utility Combos:', detectionResults.utilityCombos);
+        console.log('   Confidence Score:', confidenceScore, `/ 10 (${confidenceLevel})`);
+
+        // Require minimum confidence for positive detection
+        const isDetected = confidenceScore >= 3; // Minimum threshold
+
+        console.log('   Final Result:', isDetected ? '✅ Tailwind Detected' : '❌ Tailwind Not Detected');
+
+        return isDetected;
+    }
+
+    // Extract CSS custom properties
+    function extractCSSVariables() {
+        const root = document.documentElement;
+        const computedStyles = getComputedStyle(root);
+
+        const variables = {};
+        const cssProps = [];
+
+        // Get all CSS properties that are custom properties
+        for (let i = 0; i < computedStyles.length; i++) {
+            const prop = computedStyles[i];
+            if (prop.startsWith('--')) {
+                const value = computedStyles.getPropertyValue(prop).trim();
+                if (value) { // Only include properties with values
+                    cssProps.push({ property: prop, value: value });
+                }
+            }
+        }
+
+        // Group variables by category (more comprehensive)
+        const grouped = {
+            colors: cssProps.filter(p =>
+                p.property.includes('color') ||
+                p.property.startsWith('--color-') || // v4 uses --color-* naming
+                p.property.includes('bg') ||
+                p.property.includes('text') ||
+                p.property.includes('border') ||
+                p.property.includes('ring') ||
+                p.property.includes('shadow') && p.property.includes('color')
+            ),
+            spacing: cssProps.filter(p =>
+                p.property.includes('spacing') ||
+                p.property.startsWith('--spacing-') || // v4 spacing
+                p.property.includes('padding') ||
+                p.property.includes('margin') ||
+                p.property.includes('gap') ||
+                /^--tw-space-/.test(p.property)
+            ),
+            typography: cssProps.filter(p =>
+                p.property.includes('font') ||
+                p.property.startsWith('--font-') || // v4 fonts
+                p.property.includes('text') ||
+                p.property.includes('leading') ||
+                p.property.includes('tracking') ||
+                p.property.includes('letter-spacing') ||
+                p.property.includes('line-height') ||
+                p.property.includes('font-weight') ||
+                p.property.includes('text-decoration') ||
+                p.property.includes('font-feature') ||
+                p.property.includes('font-variation') ||
+                p.property.includes('ligatures') ||
+                p.property.includes('numerical')
+            ),
+            borders: cssProps.filter(p =>
+                p.property.includes('border') ||
+                p.property.includes('radius') ||
+                p.property.startsWith('--radius-') || // v4 radius
+                p.property.includes('outline')
+            ),
+            shadows: cssProps.filter(p =>
+                p.property.includes('shadow') &&
+                !p.property.includes('color')
+            ),
+            animations: cssProps.filter(p =>
+                p.property.includes('animation') ||
+                p.property.includes('transition') ||
+                p.property.includes('transform')
+            ),
+            other: cssProps.filter(p =>
+                !p.property.includes('color') && !p.property.includes('bg') &&
+                !p.property.includes('spacing') && !p.property.includes('padding') && !p.property.includes('margin') &&
+                !p.property.includes('gap') && !/^--tw-space-/.test(p.property) &&
+                !p.property.includes('font') && !p.property.includes('leading') && !p.property.includes('tracking') &&
+                !p.property.includes('letter-spacing') && !p.property.includes('line-height') &&
+                !p.property.includes('font-weight') && !p.property.includes('text-decoration') &&
+                !p.property.includes('font-feature') && !p.property.includes('font-variation') &&
+                !p.property.includes('ligatures') && !p.property.includes('numerical') &&
+                !p.property.includes('text') &&
+                !p.property.includes('border') && !p.property.includes('radius') && !p.property.includes('outline') &&
+                !p.property.includes('shadow') &&
+                !p.property.includes('animation') && !p.property.includes('transition') && !p.property.includes('transform')
+            )
+        };
+
+        return grouped;
+    }
+
+    // Extract Tailwind theme colors from CSS variables
+    function extractTailwindColors(cssVars) {
+        const colors = {};
+
+        // Common Tailwind color patterns (v3 and v4)
+        const colorPatterns = [
+            /^--(tw-)?ring$/,
+            /^--(tw-)?ring-offset$/,
+            /^--(color|tw-color)-([a-z]+)(?:-(\d+))?$/,
+            /^--color-([a-z-]+)$/, // v4 uses --color-* naming
+            /^--(background|foreground)$/,
+            /^--(primary|secondary|accent|muted|destructive|card|popover|border|input)$/,
+            /^--(primary|secondary|accent|muted|destructive|card|popover|border|input)-(foreground|DEFAULT)?$/
+        ];
+
+        cssVars.colors.forEach(({ property, value }) => {
+            // Clean property name for both v3 and v4 conventions
+            const cleanProp = property
+                .replace(/^--(?:tw-)?/, '')
+                .replace(/^color-/, ''); // v4 removes color- prefix for cleaner names
+            colors[cleanProp] = value;
+        });
+
+        return colors;
+    }
+
+    // Extract spacing values
+    function extractSpacing(cssVars) {
+        const spacing = {};
+
+        cssVars.spacing.forEach(({ property, value }) => {
+            const cleanProp = property.replace(/^--(?:tw-)?/, '');
+            spacing[cleanProp] = value;
+        });
+
+        return spacing;
+    }
+
+    // Extract comprehensive typography settings
+    function extractTypography(cssVars) {
+        const typography = {
+            fonts: {},
+            sizes: {},
+            weights: {},
+            lineHeights: {},
+            letterSpacing: {},
+            textDecoration: {},
+            fontFeatures: {},
+            other: {}
+        };
+
+        cssVars.typography.forEach(({ property, value }) => {
+            const cleanProp = property.replace(/^--(?:tw-)?/, '');
+
+            // Font families (both v3 and v4 formats)
+            if (cleanProp.includes('font-family') || cleanProp.startsWith('font-') && !cleanProp.includes('size') && !cleanProp.includes('weight')) {
+                let fontName = cleanProp.replace('font-family-', '').replace('font-', '');
+                if (fontName === 'sans' || fontName === 'serif' || fontName === 'mono') {
+                    typography.fonts[fontName] = value;
+                } else {
+                    typography.fonts[fontName] = value;
+                }
+            }
+            // Font sizes
+            else if (cleanProp.includes('font-size') || (cleanProp.startsWith('text-') && /^\d/.test(cleanProp.replace('text-', '')))) {
+                const sizeName = cleanProp.replace('font-size-', '').replace('text-', '');
+                typography.sizes[sizeName] = value;
+            }
+            // Font weights
+            else if (cleanProp.includes('font-weight') || cleanProp.startsWith('font-') && /\b(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)\b/.test(cleanProp)) {
+                const weightName = cleanProp.replace('font-weight-', '').replace('font-', '');
+                typography.weights[weightName] = value;
+            }
+            // Line heights
+            else if (cleanProp.includes('leading') || cleanProp.includes('line-height')) {
+                const leadingName = cleanProp.replace('leading-', '').replace('line-height-', '');
+                typography.lineHeights[leadingName] = value;
+            }
+            // Letter spacing
+            else if (cleanProp.includes('tracking') || cleanProp.includes('letter-spacing')) {
+                const trackingName = cleanProp.replace('tracking-', '').replace('letter-spacing-', '');
+                typography.letterSpacing[trackingName] = value;
+            }
+            // Text decoration
+            else if (cleanProp.includes('text-decoration') || cleanProp.includes('underline') || cleanProp.includes('overline') || cleanProp.includes('line-through')) {
+                const decorationName = cleanProp.replace('text-decoration-', '');
+                typography.textDecoration[decorationName] = value;
+            }
+            // Font features and variations
+            else if (cleanProp.includes('font-feature') || cleanProp.includes('font-variation') || cleanProp.includes('ligatures') || cleanProp.includes('numerical')) {
+                const featureName = cleanProp.replace('font-feature-settings-', '').replace('font-variation-settings-', '');
+                typography.fontFeatures[featureName] = value;
+            }
+            // Other typography properties
+            else {
+                typography.other[cleanProp] = value;
+            }
+        });
+
+        // Clean up empty categories
+        Object.keys(typography).forEach(key => {
+            if (Object.keys(typography[key]).length === 0) {
+                delete typography[key];
+            }
+        });
+
+        return typography;
+    }
+
+    // Extract border radius
+    function extractBorderRadius(cssVars) {
+        const radius = {};
+
+        cssVars.borders.forEach(({ property, value }) => {
+            if (property.includes('radius')) {
+                const cleanProp = property.replace(/^--(?:tw-)?/, '').replace('border-radius-', '');
+                radius[cleanProp] = value;
+            }
+        });
+
+        return radius;
+    }
+
+    // Extract screen breakpoints
+    function extractBreakpoints() {
+        const breakpoints = {};
+        const mediaQueries = [];
+
+        // Look for Tailwind's responsive utilities in CSS
+        const stylesheets = Array.from(document.styleSheets);
+        stylesheets.forEach(sheet => {
+            try {
+                Array.from(sheet.cssRules).forEach(rule => {
+                    if (rule.type === CSSRule.MEDIA_RULE) {
+                        const mediaText = rule.media.mediaText;
+                        if (mediaText.includes('min-width')) {
+                            mediaQueries.push(mediaText);
+                        }
+                    }
+                });
+            } catch (e) {
+                // Skip cross-origin stylesheets
+            }
+        });
+
+        // Common Tailwind breakpoints
+        const commonBreakpoints = {
+            'sm': '640px',
+            'md': '768px',
+            'lg': '1024px',
+            'xl': '1280px',
+            '2xl': '1536px'
+        };
+
+        // Try to extract from media queries
+        mediaQueries.forEach(mq => {
+            const match = mq.match(/min-width:\s*(\d+)px/);
+            if (match) {
+                const width = match[1] + 'px';
+                // Find closest common breakpoint
+                for (const [name, size] of Object.entries(commonBreakpoints)) {
+                    if (size === width) {
+                        breakpoints[name] = width;
+                        break;
+                    }
+                }
+            }
+        });
+
+        return breakpoints;
+    }
+
+    // Extract used Tailwind classes from the page with precision
+    function extractUsedClasses() {
+        const elements = document.querySelectorAll('*');
+        const classes = new Set();
+
+        // More precise Tailwind class patterns
+        const tailwindClassPatterns = [
+            // Layout & positioning
+            /^container$/,
+            /^flex$/,
+            /^grid$/,
+            /^hidden$/,
+            /^block$/,
+            /^inline$/,
+            /^inline-block$/,
+            /^absolute$/,
+            /^relative$/,
+            /^fixed$/,
+            /^sticky$/,
+            /^static$/,
+            // Display utilities
+            /^flex$/,
+            /^grid$/,
+            /^hidden$/,
+            /^block$/,
+            /^inline$/,
+            /^inline-block$/,
+            /^inline-flex$/,
+            /^inline-grid$/,
+            // Spacing
+            /^p-\d+$/,
+            /^m-\d+$/,
+            /^px-\d+$/,
+            /^py-\d+$/,
+            /^mx-\d+$/,
+            /^my-\d+$/,
+            /^mt-\d+$/,
+            /^mr-\d+$/,
+            /^mb-\d+$/,
+            /^ml-\d+$/,
+            // Width/Height
+            /^w-\d+$/,
+            /^h-\d+$/,
+            /^w-full$/,
+            /^h-full$/,
+            /^w-screen$/,
+            /^h-screen$/,
+            /^w-auto$/,
+            /^h-auto$/,
+            /^max-w-\w+$/,
+            /^min-w-\w+$/,
+            /^max-h-\w+$/,
+            /^min-h-\w+$/,
+            // Colors (Tailwind specific)
+            /^bg-(red|blue|green|yellow|purple|pink|indigo|gray|slate|zinc|neutral|stone)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+            /^bg-(white|black|transparent|current)$/,
+            /^text-(red|blue|green|yellow|purple|pink|indigo|gray|slate|zinc|neutral|stone)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+            /^text-(white|black|transparent|current)$/,
+            /^border-(red|blue|green|yellow|purple|pink|indigo|gray|slate|zinc|neutral|stone)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+                // Typography (comprehensive)
+                /^text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/,
+                /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/,
+                /^font-(sans|serif|mono)$/,
+                /^font-(100|200|300|400|500|600|700|800|900)$/,
+                /^leading-(3|4|5|6|7|8|9|10|none|tight|snug|normal|relaxed|loose)$/,
+                /^tracking-(tighter|tight|normal|wide|wider|widest)$/,
+                /^text-(left|center|right|justify)$/,
+                /^text-(uppercase|lowercase|capitalize)$/,
+                /^underline$/, /^line-through$/, /^no-underline$/,
+                /^italic$/, /^not-italic$/,
+                /^whitespace-(normal|nowrap|pre|pre-line|pre-wrap)$/,
+                /^break-(normal|words|all)$/,
+                /^truncate$/, /^text-ellipsis$/, /^text-clip$/,
+            // Borders
+            /^rounded$/,
+            /^rounded-(sm|md|lg|xl|2xl|3xl|full)$/,
+            /^rounded-(t|r|b|l)-(sm|md|lg|xl|2xl|3xl|full)$/,
+            /^border$/,
+            /^border-(t|r|b|l)$/,
+            /^border-\d+$/,
+            // Shadows
+            /^shadow$/,
+            /^shadow-(sm|md|lg|xl|2xl|inner)$/,
+            /^shadow-(black|white|gray|blue|red|green|yellow|purple|pink)\/\d+$/,
+            // Effects
+            /^opacity-\d+$/,
+            /^blur$/,
+            /^blur-(sm|md|lg|xl|2xl)$/,
+            // Responsive prefixes
+            /^(sm|md|lg|xl|2xl):/,
+            // Dark mode
+            /^dark:/,
+            // Hover/Focus states
+            /^hover:/,
+            /^focus:/,
+            /^active:/,
+            /^disabled:/,
+            // Z-index
+            /^z-\d+$/,
+            /^z-auto$/
+        ];
+
+        // Check all elements, not just first 100
+        const elementsToCheck = Array.from(elements);
+
+        elementsToCheck.forEach(el => {
+            if (el.className && typeof el.className === 'string') {
+                el.className.split(/\s+/).forEach(cls => {
+                    if (cls && cls.trim()) {
+                        // Check if it matches any Tailwind pattern
+                        const isTailwindClass = tailwindClassPatterns.some(pattern =>
+                            pattern.test(cls)
+                        );
+
+                        if (isTailwindClass) {
+                            classes.add(cls);
+                        }
+                    }
+                });
+            }
+        });
+
+        // Also check for classes in data attributes and dynamic content
+        const dataAttributes = document.querySelectorAll('[class]');
+        dataAttributes.forEach(el => {
+            if (el.className && typeof el.className === 'string') {
+                el.className.split(/\s+/).forEach(cls => {
+                    if (cls && cls.trim()) {
+                        const isTailwindClass = tailwindClassPatterns.some(pattern =>
+                            pattern.test(cls)
+                        );
+
+                        if (isTailwindClass) {
+                            classes.add(cls);
+                        }
+                    }
+                });
+            }
+        });
+
+        return Array.from(classes).sort();
+    }
+
+    // Check for dark mode configuration
+    function checkDarkMode() {
+        const html = document.documentElement;
+        const body = document.body;
+
+        return {
+            hasDarkMode: html.classList.contains('dark') || body.classList.contains('dark'),
+            darkModeStrategy: html.hasAttribute('data-theme') ? 'data-theme' :
+                            html.classList.contains('dark') ? 'class' : 'unknown'
+        };
+    }
+
+    // Main extraction function
+    function extractTailwindConfig() {
+        const tailwindDetected = isTailwindLoaded();
+
+        if (!tailwindDetected) {
+            console.warn('⚠️  Tailwind CSS does not appear to be loaded on this page');
+            console.log('🔄 Attempting fallback extraction anyway...');
+
+            // Even if detection fails, try to extract what we can
+            // (some sites might use Tailwind classes dynamically or in non-standard ways)
+        } else {
+            console.log('✅ Tailwind CSS detected');
+        }
+
+        const cssVars = extractCSSVariables();
+
+        // If we have CSS variables, it's likely Tailwind or similar
+        const hasAnyVars = Object.values(cssVars).some(group => group.length > 0);
+
+        if (!tailwindDetected && !hasAnyVars) {
+            console.log('❌ No Tailwind-related CSS variables found either');
+            console.log('💡 This page may not be using Tailwind CSS, or it might be configured differently');
+            return null;
+        }
+
+        if (!tailwindDetected && hasAnyVars) {
+            console.log('🔍 Found CSS variables that might be Tailwind-related, proceeding with extraction...');
+        }
+
+        const config = {
+            darkMode: checkDarkMode(),
+            theme: {
+                colors: extractTailwindColors(cssVars),
+                spacing: extractSpacing(cssVars),
+                typography: extractTypography(cssVars),
+                borderRadius: extractBorderRadius(cssVars),
+                screens: extractBreakpoints()
+            },
+            usedClasses: extractUsedClasses(),
+            cssVariables: cssVars
+        };
+
+        return config;
+    }
+
+    // Display results with enhanced precision
+    function displayResults(config) {
+        if (!config) return;
+
+        console.log('\n🎯 Tailwind CSS Configuration Extracted (v3/v4 Compatible):');
+        console.log('===========================================================');
+
+        // Summary with precision metrics
+        const totalVars = Object.values(config.cssVariables || {}).reduce((sum, group) => sum + (group?.length || 0), 0);
+        const totalCategories = Object.values(config.cssVariables || {}).filter(group => group?.length > 0).length;
+
+        console.log(`📊 Precision Analysis:`);
+        console.log(`   Total Tailwind Variables: ${totalVars}`);
+        console.log(`   Active Categories: ${totalCategories}/8`);
+        console.log(`   Verified Classes: ${config.usedClasses.length}`);
+
+        // Version detection attempt
+        const versionIndicators = detectTailwindVersion(config);
+        if (versionIndicators.version) {
+            console.log(`   Detected Version: ${versionIndicators.version} (${versionIndicators.confidence})`);
+        }
+
+        console.log('\n🌙 Dark Mode Configuration:');
+        console.log(`   Strategy: ${config.darkMode.darkModeStrategy}`);
+        console.log(`   Currently Active: ${config.darkMode.hasDarkMode}`);
+
+        // Colors (enhanced display)
+        if (config.cssVariables?.colors?.length > 0) {
+            console.log('\n🎨 Color System Variables:');
+            const colorGroups = groupColorsByType(config.cssVariables.colors);
+            Object.entries(colorGroups).forEach(([type, colors]) => {
+                console.log(`   ${type}:`);
+                colors.slice(0, 8).forEach(({ property, value }) => {
+                    console.log(`     ${property}: ${value}`);
+                });
+                if (colors.length > 8) {
+                    console.log(`     ... and ${colors.length - 8} more ${type.toLowerCase()}`);
+                }
+            });
+        }
+
+        // Spacing (enhanced)
+        if (config.cssVariables?.spacing?.length > 0) {
+            console.log('\n📏 Spacing & Layout Variables:');
+            const spacingByType = groupSpacingByType(config.cssVariables.spacing);
+            Object.entries(spacingByType).forEach(([type, vars]) => {
+                console.log(`   ${type}: ${vars.length} variables`);
+            });
+            // Show sample spacing values
+            config.cssVariables.spacing.slice(0, 6).forEach(({ property, value }) => {
+                console.log(`     ${property}: ${value}`);
+            });
+        }
+
+        // Typography (comprehensive)
+        if (config.cssVariables?.typography?.length > 0) {
+            console.log('\n📝 Typography System:');
+            const typographyByType = groupTypographyByType(config.cssVariables.typography);
+            Object.entries(typographyByType).forEach(([type, vars]) => {
+                console.log(`   ${type}: ${vars.length} variables`);
+                if (vars.length > 0) {
+                    // Show different preview based on category
+                    if (type === 'Font Families') {
+                        vars.slice(0, 4).forEach(({ property, value }) => {
+                            const fontName = property.replace(/^--(?:tw-)?(?:font-)?(?:family-)?/, '');
+                            console.log(`     ${fontName}: ${value}`);
+                        });
+                    } else if (type === 'Font Sizes') {
+                        vars.slice(0, 6).forEach(({ property, value }) => {
+                            const sizeName = property.replace(/^--(?:tw-)?(?:font-size-|text-)/, '');
+                            console.log(`     ${sizeName}: ${value}`);
+                        });
+                    } else if (type === 'Font Weights') {
+                        vars.slice(0, 5).forEach(({ property, value }) => {
+                            const weightName = property.replace(/^--(?:tw-)?(?:font-weight-|font-)/, '');
+                            console.log(`     ${weightName}: ${value}`);
+                        });
+                    } else {
+                        vars.slice(0, 3).forEach(({ property, value }) => {
+                            const propName = property.replace(/^--(?:tw-)?/, '');
+                            console.log(`     ${propName}: ${value}`);
+                        });
+                    }
+                    if (vars.length > (type === 'Font Families' ? 4 : type === 'Font Sizes' ? 6 : 3)) {
+                        console.log(`     ... and ${vars.length - (type === 'Font Families' ? 4 : type === 'Font Sizes' ? 6 : 3)} more`);
+                    }
+                }
+            });
+        }
+
+        // Layout utilities
+        if (config.cssVariables?.layout?.length > 0) {
+            console.log('\n📐 Layout Variables:');
+            console.log(`   Size utilities: ${config.cssVariables?.layout?.length || 0} variables`);
+            config.cssVariables.layout.slice(0, 4).forEach(({ property, value }) => {
+                console.log(`     ${property}: ${value}`);
+            });
+        }
+
+        // Effects & animations
+        const effectsCount = (config.cssVariables?.effects?.length || 0) + (config.cssVariables?.animations?.length || 0);
+        if (effectsCount > 0) {
+            console.log('\n✨ Effects & Animations:');
+            console.log(`   Shadow effects: ${config.cssVariables?.effects?.length || 0}`);
+            console.log(`   Animation/Transition: ${config.cssVariables?.animations?.length || 0}`);
+        }
+
+        // Borders
+        if (config.cssVariables?.borders?.length > 0) {
+            console.log('\n🔲 Border & Radius System:');
+            console.log(`   Border utilities: ${config.cssVariables?.borders?.length || 0} variables`);
+        }
+
+        console.log('\n📱 Responsive Breakpoints:');
+        if (Object.keys(config.theme.screens).length > 0) {
+            Object.entries(config.theme.screens).forEach(([key, value]) => {
+                console.log(`   ${key}: ${value}`);
+            });
+        } else {
+            console.log('   No custom breakpoints detected (using defaults)');
+        }
+
+        // Used classes with categorization
+        if (config.usedClasses.length > 0) {
+            console.log('\n🏷️  Verified Tailwind Classes:');
+            const classCategories = categorizeClasses(config.usedClasses);
+
+            Object.entries(classCategories).forEach(([category, classes]) => {
+                if (classes.length > 0) {
+                    console.log(`   ${category}: ${classes.length} classes`);
+                    classes.slice(0, 8).forEach(cls => {
+                        console.log(`     ${cls}`);
+                    });
+                    if (classes.length > 8) {
+                        console.log(`     ... and ${classes.length - 8} more`);
+                    }
+                }
+            });
+        }
+
+        console.log('\n💾 Detailed Variable Summary:');
+        const summary = [
+            `🎨 Colors: ${config.cssVariables?.colors?.length || 0}`,
+            `📏 Spacing: ${config.cssVariables?.spacing?.length || 0}`,
+            `📝 Typography: ${config.cssVariables?.typography?.length || 0} (fonts, sizes, weights, spacing)`,
+            `📐 Layout: ${config.cssVariables?.layout?.length || 0}`,
+            `✨ Effects: ${config.cssVariables?.effects?.length || 0}`,
+            `🎭 Animations: ${config.cssVariables?.animations?.length || 0}`,
+            `🔲 Borders: ${config.cssVariables?.borders?.length || 0}`,
+            `❓ Other: ${config.cssVariables?.other?.length || 0}`
+        ];
+        summary.forEach(line => console.log(`   ${line}`));
+
+        // Make config available globally for further inspection
+        window.extractedTailwindConfig = config;
+        console.log('\n🔍 Full config available as: window.extractedTailwindConfig');
+
+        // Provide export functionality
+        console.log('\n📤 Export Options:');
+        console.log('   Copy to clipboard: copy(window.extractedTailwindConfig)');
+        console.log('   Download as JSON: downloadTailwindConfig()');
+        console.log('   📄 Download complete tailwind.config.js: downloadTailwindConfigFile()');
+        console.log('   📄 Generate tailwind.config.js: generateTailwindConfigFile()');
+        console.log('   🎨📝 Copy Colors & Typography (Full Markdown): copyColorsAndTypography()');
+        console.log('   Generate v4 config (CSS): generateTailwindConfig("v4")');
+        console.log('   Generate v3 config (JS): generateTailwindConfig("v3")');
+        console.log('   Auto-detect version: generateTailwindConfig()');
+
+        // Add enhanced download function
+        window.downloadTailwindConfig = function() {
+            const dataStr = JSON.stringify(config, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = `tailwind-config-${window.location.hostname}-${new Date().toISOString().split('T')[0]}.json`;
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        };
+
+        // Generate complete tailwind.config.js file
+        function generateTailwindConfigFile(extractedConfig) {
+            const today = new Date().toISOString().split('T')[0];
+            const config = {
+                darkMode: extractedConfig.darkMode.darkModeStrategy === 'class' ? 'class' : 'media',
+                content: ['./src/**/*.{html,ts,js,jsx,tsx,vue,svelte}'], // Default content paths
+                theme: {
+                    extend: {}
+                },
+                plugins: []
+            };
+
+            // Process colors with comprehensive palette detection
+            if (extractedConfig.cssVariables.colors && extractedConfig.cssVariables.colors.length > 0) {
+                const colorMap = {};
+                const customPalettes = {};
+
+                extractedConfig.cssVariables.colors.forEach(({ property, value }) => {
+                    const propName = property.replace(/^--(?:tw-)?color-/, '').replace(/^--/, '');
+
+                    // Handle semantic colors
+                    if (propName === 'background') colorMap.background = value;
+                    else if (propName === 'foreground') colorMap.foreground = value;
+                    else if (propName === 'primary') colorMap.primary = { DEFAULT: value };
+                    else if (propName === 'secondary') colorMap.secondary = { DEFAULT: value };
+                    else if (propName === 'accent') colorMap.accent = { DEFAULT: value };
+                    else if (propName === 'muted') colorMap.muted = { DEFAULT: value };
+                    else if (propName === 'destructive') colorMap.destructive = { DEFAULT: value };
+                    else if (propName === 'border') colorMap.border = value;
+                    else if (propName === 'input') colorMap.input = value;
+                    else if (propName === 'ring') colorMap.ring = value;
+                    else if (propName === 'card') colorMap.card = { DEFAULT: value };
+                    else if (propName === 'popover') colorMap.popover = { DEFAULT: value };
+                    // Handle sidebar colors (if present)
+                    else if (propName.startsWith('sidebar')) {
+                        if (!colorMap.sidebar) colorMap.sidebar = {};
+                        const sidebarProp = propName.replace('sidebar-', '').replace('-', '_');
+                        colorMap.sidebar[sidebarProp] = value;
+                    }
+                    // Handle chart colors (if present)
+                    else if (propName.startsWith('chart-')) {
+                        if (!colorMap.chart) colorMap.chart = {};
+                        const chartNum = propName.replace('chart-', '');
+                        colorMap.chart[chartNum] = value;
+                    }
+                    // Handle custom color palettes (detect by pattern)
+                    else {
+                        const colorMatch = propName.match(/^([a-z-]+)-(\d+)$/);
+                        if (colorMatch) {
+                            const [, paletteName, shade] = colorMatch;
+                            if (!customPalettes[paletteName]) customPalettes[paletteName] = {};
+                            customPalettes[paletteName][shade] = value;
+                        }
+                    }
+                });
+
+                // Add semantic colors
+                if (Object.keys(colorMap).length > 0) {
+                    config.theme.extend.colors = { ...config.theme.extend.colors, ...colorMap };
+                }
+
+                // Add custom palettes
+                Object.entries(customPalettes).forEach(([paletteName, palette]) => {
+                    if (!config.theme.extend.colors) config.theme.extend.colors = {};
+                    config.theme.extend.colors[paletteName] = palette;
+                });
+            }
+
+            // Process comprehensive typography
+            if (extractedConfig.cssVariables.typography && extractedConfig.cssVariables.typography.length > 0) {
+                const fontMap = {};
+                const textSizeMap = {};
+                const fontWeightMap = {};
+                const lineHeightMap = {};
+                const letterSpacingMap = {};
+
+                extractedConfig.cssVariables.typography.forEach(({ property, value }) => {
+                    const propName = property.replace(/^--(?:tw-)?/, '');
+
+                    // Font families
+                    if (propName.includes('font-family') || (propName.startsWith('font-') && !propName.includes('size') && !propName.includes('weight'))) {
+                        const fontName = propName.replace('font-family-', '').replace('font-', '');
+                        fontMap[fontName] = value.replace(/"/g, '').split(', ');
+                    }
+                    // Font sizes
+                    else if (propName.includes('font-size') || (propName.startsWith('text-') && /^\d/.test(propName.replace('text-', '')))) {
+                        const size = propName.replace('font-size-', '').replace('text-', '');
+                        textSizeMap[size] = value;
+                    }
+                    // Font weights
+                    else if (propName.includes('font-weight') || propName.startsWith('font-') && /\b(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)\b/.test(propName)) {
+                        const weightName = propName.replace('font-weight-', '').replace('font-', '');
+                        fontWeightMap[weightName] = value;
+                    }
+                    // Line heights
+                    else if (propName.includes('leading') || propName.includes('line-height')) {
+                        const leadingName = propName.replace('leading-', '').replace('line-height-', '');
+                        lineHeightMap[leadingName] = value;
+                    }
+                    // Letter spacing
+                    else if (propName.includes('tracking') || propName.includes('letter-spacing')) {
+                        const trackingName = propName.replace('tracking-', '').replace('letter-spacing-', '');
+                        letterSpacingMap[trackingName] = value;
+                    }
+                });
+
+                if (Object.keys(fontMap).length > 0) {
+                    config.theme.extend.fontFamily = fontMap;
+                }
+                if (Object.keys(textSizeMap).length > 0) {
+                    config.theme.extend.fontSize = textSizeMap;
+                }
+                if (Object.keys(fontWeightMap).length > 0) {
+                    config.theme.extend.fontWeight = fontWeightMap;
+                }
+                if (Object.keys(lineHeightMap).length > 0) {
+                    config.theme.extend.lineHeight = lineHeightMap;
+                }
+                if (Object.keys(letterSpacingMap).length > 0) {
+                    config.theme.extend.letterSpacing = letterSpacingMap;
+                }
+            }
+
+            // Process border radius
+            if (extractedConfig.cssVariables.borders && extractedConfig.cssVariables.borders.length > 0) {
+                const radiusMap = {};
+                extractedConfig.cssVariables.borders.forEach(({ property, value }) => {
+                    if (property.includes('radius')) {
+                        const radiusName = property.replace(/^--(?:tw-)?/, '').replace('border-radius-', '').replace('radius-', '');
+                        radiusMap[radiusName] = value;
+                    }
+                });
+                if (Object.keys(radiusMap).length > 0) {
+                    config.theme.extend.borderRadius = radiusMap;
+                }
+            }
+
+            // Process screens/breakpoints
+            if (extractedConfig.theme.screens && Object.keys(extractedConfig.theme.screens).length > 0) {
+                config.theme.extend.screens = extractedConfig.theme.screens;
+            }
+
+            // Generate the config as a string with proper formatting
+            const configString = `/**
+ * Tailwind CSS Configuration
+ *
+ * Generated from: ${window.location.hostname}
+ * Date: ${today}
+ * Using: Enhanced Tailwind Extractor v3.0
+ *
+ * This configuration was automatically extracted from the live website
+ * and includes all detected design tokens, color palettes, typography,
+ * spacing, and component configurations.
+ */
+
+ /** @type {import('tailwindcss').Config} */
+module.exports = ${JSON.stringify(config, null, 2)};`;
+
+            console.log('🎨 Generated Complete Tailwind Config File:');
+            console.log('===========================================');
+            console.log(configString);
+
+            window.generatedTailwindConfigFile = configString;
+            console.log('\n📋 Config file available as: window.generatedTailwindConfigFile');
+
+            // Auto-copy to clipboard if available
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(configString).then(() => {
+                    console.log('✅ Config file copied to clipboard!');
+                }).catch(() => {
+                    console.log('⚠️ Could not copy to clipboard, use window.generatedTailwindConfigFile');
+                });
+            }
+
+            return configString;
+        }
+
+        // Download function for the config file
+        window.downloadTailwindConfigFile = function() {
+            const configString = generateTailwindConfigFile(window.extractedTailwindConfig);
+            const dataUri = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(configString);
+
+            const exportFileDefaultName = `tailwind.config-${window.location.hostname}-${new Date().toISOString().split('T')[0]}.js`;
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        };
+
+        // Copy colors and typography to clipboard in Markdown format
+        window.copyColorsAndTypography = function() {
+            const config = window.extractedTailwindConfig;
+            if (!config) {
+                console.error('❌ No extracted config found. Run the extractor first.');
+                return;
+            }
+
+            let output = `# 🎨 Colors & Typography - ${window.location.hostname}\n\n`;
+            output += `*Generated: ${new Date().toISOString().split('T')[0]}*\n\n`;
+            output += `*Source: ${window.location.href}*\n\n`;
+
+            // Extract colors
+            if (config.cssVariables?.colors?.length > 0) {
+                output += `## 🎨 Colors\n\n`;
+                const colorGroups = groupColorsByType(config.cssVariables.colors);
+
+                Object.entries(colorGroups).forEach(([type, colors]) => {
+                    if (colors.length > 0) {
+                        output += `### ${type}\n\n`;
+                        output += `| Variable | Value |\n`;
+                        output += `|----------|-------|\n`;
+                        colors.forEach(({ property, value }) => {
+                            const cleanName = property.replace(/^--(?:tw-)?(?:color-)?/, '');
+                            // Create a color preview for visual reference
+                            const colorPreview = value.includes('lab(') || value.includes('oklch(') || value.includes('hsl(') || value.includes('rgb(') || value.startsWith('#') ?
+                                `<span style="background:${value};padding:2px 8px;border-radius:3px;color:${value.includes('100') || value.includes('200') || value.includes('50') || value.includes('lab(9') || value.includes('lab(8') ? 'black' : 'white'}">${value}</span>` : `\`${value}\``;
+                            output += `| \`--${cleanName}\` | ${colorPreview} |\n`;
+                        });
+                        output += `\n`;
+                    }
+                });
+            }
+
+            // Extract typography
+            if (config.cssVariables?.typography?.length > 0) {
+                output += `## 📝 Typography\n\n`;
+                const typographyGroups = groupTypographyByType(config.cssVariables.typography);
+
+                Object.entries(typographyGroups).forEach(([type, vars]) => {
+                    if (vars.length > 0) {
+                        output += `### ${type}\n\n`;
+                        output += `| Variable | Value |\n`;
+                        output += `|----------|-------|\n`;
+                        vars.forEach(({ property, value }) => {
+                            const cleanName = property.replace(/^--(?:tw-)?/, '');
+                            output += `| \`--${cleanName}\` | \`${value}\` |\n`;
+                        });
+                        output += `\n`;
+                    }
+                });
+            }
+
+            // Extract ALL border variables if present
+            if (config.cssVariables?.borders?.length > 0) {
+                output += `## 🔲 Border Variables\n\n`;
+                output += `| Variable | Value |\n`;
+                output += `|----------|-------|\n`;
+                config.cssVariables.borders.forEach(({ property, value }) => {
+                    const cleanName = property.replace(/^--(?:tw-)?/, '');
+                    output += `| \`--${cleanName}\` | \`${value}\` |\n`;
+                });
+                output += `\n`;
+            }
+
+            // Add complete CSS version at the end
+            if (config.cssVariables?.colors?.length > 0 || config.cssVariables?.typography?.length > 0 || config.cssVariables?.borders?.length > 0) {
+                output += `## 📋 Complete CSS Variables (for :root)\n\n`;
+                output += `\`\`\`css\n:root {\n`;
+
+                // Add ALL colors
+                if (config.cssVariables?.colors?.length > 0) {
+                    output += `  /* Colors */\n`;
+                    config.cssVariables.colors.forEach(({ property, value }) => {
+                        const cleanName = property.replace(/^--(?:tw-)?(?:color-)?/, '');
+                        output += `  --${cleanName}: ${value};\n`;
+                    });
+                    output += `\n`;
+                }
+
+                // Add ALL typography
+                if (config.cssVariables?.typography?.length > 0) {
+                    output += `  /* Typography */\n`;
+                    config.cssVariables.typography.forEach(({ property, value }) => {
+                        const cleanName = property.replace(/^--(?:tw-)?/, '');
+                        output += `  --${cleanName}: ${value};\n`;
+                    });
+                    output += `\n`;
+                }
+
+                // Add ALL border radius
+                if (config.cssVariables?.borders?.length > 0) {
+                    const radiusVars = config.cssVariables.borders.filter(({ property }) => property.includes('radius'));
+                    if (radiusVars.length > 0) {
+                        output += `  /* Border Radius */\n`;
+                        radiusVars.forEach(({ property, value }) => {
+                            const cleanName = property.replace(/^--(?:tw-)?/, '');
+                            output += `  --${cleanName}: ${value};\n`;
+                        });
+                        output += `\n`;
+                    }
+                }
+
+                // Add other variables if any
+                const otherVars = [];
+                if (config.cssVariables?.spacing?.length > 0) {
+                    otherVars.push(...config.cssVariables.spacing);
+                }
+                if (config.cssVariables?.shadows?.length > 0) {
+                    otherVars.push(...config.cssVariables.shadows);
+                }
+                if (config.cssVariables?.animations?.length > 0) {
+                    otherVars.push(...config.cssVariables.animations);
+                }
+                if (config.cssVariables?.other?.length > 0) {
+                    otherVars.push(...config.cssVariables.other);
+                }
+
+                if (otherVars.length > 0) {
+                    output += `  /* Other Variables */\n`;
+                    otherVars.forEach(({ property, value }) => {
+                        const cleanName = property.replace(/^--(?:tw-)?/, '');
+                        output += `  --${cleanName}: ${value};\n`;
+                    });
+                    output += `\n`;
+                }
+
+                output += `}\n\`\`\`\n\n`;
+            }
+
+            console.log('📋 Colors & Typography extracted (Markdown):');
+            console.log('============================================');
+            console.log(output);
+
+            // Copy to clipboard
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(output).then(() => {
+                    console.log('✅ Complete Colors & Typography copied to clipboard (Markdown)!');
+                    console.log('💡 All variables included - no truncation!');
+                    console.log('📝 Perfect for documentation or design systems');
+                }).catch((err) => {
+                    console.error('❌ Failed to copy:', err);
+                    console.log('📄 Manual copy:', output);
+                });
+            } else {
+                console.log('⚠️ Clipboard API not available, here\'s the content to copy manually:');
+                console.log(output);
+            }
+
+            window.copiedColorsAndTypography = output;
+            console.log('\n📋 Content also available as: window.copiedColorsAndTypography');
+
+            return output;
+        };
+
+        // Generate Tailwind v4 CSS-based config
+        function generateV4Config(extractedConfig) {
+            let cssConfig = `@import "tailwindcss";\n\n`;
+            cssConfig += `/* Extracted Tailwind v4 Configuration */\n`;
+            cssConfig += `/* Generated from: ${window.location.hostname} */\n`;
+            cssConfig += `/* Date: ${new Date().toISOString().split('T')[0]} */\n\n`;
+
+            cssConfig += `@theme {\n`;
+
+            // Colors
+            if (extractedConfig.cssVariables.colors && extractedConfig.cssVariables.colors.length > 0) {
+                cssConfig += `  /* Color System */\n`;
+                extractedConfig.cssVariables.colors.forEach(({ property, value }) => {
+                    const colorName = property.replace(/^--(?:tw-)?(?:color-)?/, '');
+                    cssConfig += `  --color-${colorName}: ${value};\n`;
+                });
+                cssConfig += '\n';
+            }
+
+            // Spacing
+            if (extractedConfig.cssVariables.spacing && extractedConfig.cssVariables.spacing.length > 0) {
+                cssConfig += `  /* Spacing System */\n`;
+                extractedConfig.cssVariables.spacing.forEach(({ property, value }) => {
+                    const spacingName = property.replace(/^--(?:tw-)?(?:spacing-)?/, '');
+                    cssConfig += `  --spacing-${spacingName}: ${value};\n`;
+                });
+                cssConfig += '\n';
+            }
+
+            // Typography (comprehensive)
+            if (extractedConfig.cssVariables.typography && extractedConfig.cssVariables.typography.length > 0) {
+                cssConfig += `  /* Typography System */\n`;
+                extractedConfig.cssVariables.typography.forEach(({ property, value }) => {
+                    const propName = property.replace(/^--(?:tw-)?/, '');
+
+                    // Font families
+                    if (propName.includes('font-family') || (propName.startsWith('font-') && !propName.includes('size') && !propName.includes('weight'))) {
+                        const fontName = propName.replace('font-family-', '').replace('font-', '');
+                        cssConfig += `  --font-${fontName}: ${value};\n`;
+                    }
+                    // Font sizes
+                    else if (propName.includes('font-size') || (propName.startsWith('text-') && /^\d/.test(propName.replace('text-', '')))) {
+                        const sizeName = propName.replace('font-size-', '').replace('text-', '');
+                        cssConfig += `  --font-size-${sizeName}: ${value};\n`;
+                    }
+                    // Font weights
+                    else if (propName.includes('font-weight') || propName.startsWith('font-') && /\b(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)\b/.test(propName)) {
+                        const weightName = propName.replace('font-weight-', '').replace('font-', '');
+                        cssConfig += `  --font-weight-${weightName}: ${value};\n`;
+                    }
+                    // Line heights
+                    else if (propName.includes('leading') || propName.includes('line-height')) {
+                        const leadingName = propName.replace('leading-', '').replace('line-height-', '');
+                        cssConfig += `  --leading-${leadingName}: ${value};\n`;
+                    }
+                    // Letter spacing
+                    else if (propName.includes('tracking') || propName.includes('letter-spacing')) {
+                        const trackingName = propName.replace('tracking-', '').replace('letter-spacing-', '');
+                        cssConfig += `  --tracking-${trackingName}: ${value};\n`;
+                    }
+                    // Other typography properties
+                    else {
+                        cssConfig += `  --${propName}: ${value};\n`;
+                    }
+                });
+                cssConfig += '\n';
+            }
+
+            // Border Radius
+            if (extractedConfig.cssVariables.borders && extractedConfig.cssVariables.borders.length > 0) {
+                cssConfig += `  /* Border Radius */\n`;
+                extractedConfig.cssVariables.borders.forEach(({ property, value }) => {
+                    if (property.includes('radius')) {
+                        const radiusName = property.replace(/^--(?:tw-)?/, '').replace('border-radius-', '');
+                        cssConfig += `  --radius-${radiusName}: ${value};\n`;
+                    }
+                });
+                cssConfig += '\n';
+            }
+
+            // Breakpoints
+            if (extractedConfig.theme.screens && Object.keys(extractedConfig.theme.screens).length > 0) {
+                cssConfig += `  /* Breakpoints */\n`;
+                Object.entries(extractedConfig.theme.screens).forEach(([name, value]) => {
+                    cssConfig += `  --breakpoint-${name}: ${value};\n`;
+                });
+                cssConfig += '\n';
+            }
+
+            cssConfig += `}\n`;
+
+            console.log('🎨 Generated Tailwind v4 Config (CSS):');
+            console.log('======================================');
+            console.log(cssConfig);
+
+            window.generatedTailwindV4Config = cssConfig;
+            console.log('\n📋 Config available as: window.generatedTailwindV4Config');
+
+            // Auto-copy to clipboard if available
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(cssConfig).then(() => {
+                    console.log('✅ Config copied to clipboard!');
+                }).catch(() => {
+                    console.log('⚠️ Could not copy to clipboard, use window.generatedTailwindV4Config');
+                });
+            }
+
+            return cssConfig;
+        }
+
+        // Add function to generate complete tailwind.config.js file
+        window.generateTailwindConfigFile = function() {
+            return generateTailwindConfigFile(window.extractedTailwindConfig);
+        };
+
+        // Add function to generate clean Tailwind config from extracted data
+        window.generateTailwindConfig = function(version = 'auto') {
+            const extractedConfig = window.extractedTailwindConfig;
+            if (!extractedConfig) {
+                console.error('No extracted config found. Run the extractor first.');
+                return;
+            }
+
+            // Auto-detect version if not specified
+            if (version === 'auto') {
+                const versionInfo = detectTailwindVersion(extractedConfig);
+                version = versionInfo.version || 'v4'; // Default to v4
+                console.log(`📌 Detected Tailwind ${version} (${versionInfo.confidence} confidence)`);
+            }
+
+            // Generate v4 config (CSS-based)
+            if (version === 'v4') {
+                return generateV4Config(extractedConfig);
+            }
+
+            // Generate v3 config (JavaScript-based)
+            const cleanConfig = {
+                darkMode: extractedConfig.darkMode.darkModeStrategy === 'class' ? 'class' : 'media',
+                content: ['./src/**/*.{html,ts,js,jsx,tsx,vue,svelte}'], // Default content paths
+                theme: {
+                    extend: {}
+                },
+                plugins: []
+            };
+
+            // Process colors
+            if (extractedConfig.cssVariables.colors && extractedConfig.cssVariables.colors.length > 0) {
+                const colorMap = {};
+
+                // Group colors by base name
+                extractedConfig.cssVariables.colors.forEach(({ property, value }) => {
+                    const propName = property.replace(/^--(?:tw-)?color-/, '').replace(/^--/, '');
+
+                    // Handle semantic colors
+                    if (propName === 'background') colorMap.background = value;
+                    else if (propName === 'foreground') colorMap.foreground = value;
+                    else if (propName === 'primary') colorMap.primary = { DEFAULT: value };
+                    else if (propName === 'secondary') colorMap.secondary = { DEFAULT: value };
+                    else if (propName === 'accent') colorMap.accent = { DEFAULT: value };
+                    else if (propName === 'muted') colorMap.muted = { DEFAULT: value };
+                    else if (propName === 'destructive') colorMap.destructive = { DEFAULT: value };
+                    else if (propName === 'border') colorMap.border = value;
+                    else if (propName === 'input') colorMap.input = value;
+                    else if (propName === 'ring') colorMap.ring = value;
+                    else if (propName === 'card') colorMap.card = { DEFAULT: value };
+                    else if (propName === 'popover') colorMap.popover = { DEFAULT: value };
+                    // Handle color palettes (zinc-50, blue-500, etc.)
+                    else {
+                        const colorMatch = propName.match(/^([a-z]+)-(\d+)$/);
+                        if (colorMatch) {
+                            const [, colorName, shade] = colorMatch;
+                            if (!colorMap[colorName]) colorMap[colorName] = {};
+                            colorMap[colorName][shade] = value;
+                        }
+                    }
+                });
+
+                if (Object.keys(colorMap).length > 0) {
+                    cleanConfig.theme.extend.colors = colorMap;
+                }
+            }
+
+            // Process spacing
+            if (extractedConfig.cssVariables.spacing && extractedConfig.cssVariables.spacing.length > 0) {
+                const spacingMap = {};
+                extractedConfig.cssVariables.spacing.forEach(({ property, value }) => {
+                    const propName = property.replace(/^--(?:tw-)?/, '');
+                    if (propName.startsWith('space-') || propName.startsWith('spacing')) {
+                        spacingMap[propName.replace('spacing', 'space-y').replace('space-', '')] = value;
+                    }
+                });
+                if (Object.keys(spacingMap).length > 0) {
+                    cleanConfig.theme.extend.spacing = spacingMap;
+                }
+            }
+
+            // Process typography (comprehensive)
+            if (extractedConfig.cssVariables.typography && extractedConfig.cssVariables.typography.length > 0) {
+                const fontMap = {};
+                const textSizeMap = {};
+                const fontWeightMap = {};
+                const lineHeightMap = {};
+                const letterSpacingMap = {};
+
+                extractedConfig.cssVariables.typography.forEach(({ property, value }) => {
+                    const propName = property.replace(/^--(?:tw-)?/, '');
+
+                    // Font families
+                    if (propName.includes('font-family') || (propName.startsWith('font-') && !propName.includes('size') && !propName.includes('weight'))) {
+                        const fontName = propName.replace('font-family-', '').replace('font-', '');
+                        fontMap[fontName] = value.replace(/"/g, '').split(', ');
+                    }
+                    // Font sizes
+                    else if (propName.includes('font-size') || (propName.startsWith('text-') && /^\d/.test(propName.replace('text-', '')))) {
+                        const size = propName.replace('font-size-', '').replace('text-', '');
+                        textSizeMap[size] = value;
+                    }
+                    // Font weights
+                    else if (propName.includes('font-weight') || propName.startsWith('font-') && /\b(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)\b/.test(propName)) {
+                        const weightName = propName.replace('font-weight-', '').replace('font-', '');
+                        fontWeightMap[weightName] = value;
+                    }
+                    // Line heights
+                    else if (propName.includes('leading') || propName.includes('line-height')) {
+                        const leadingName = propName.replace('leading-', '').replace('line-height-', '');
+                        lineHeightMap[leadingName] = value;
+                    }
+                    // Letter spacing
+                    else if (propName.includes('tracking') || propName.includes('letter-spacing')) {
+                        const trackingName = propName.replace('tracking-', '').replace('letter-spacing-', '');
+                        letterSpacingMap[trackingName] = value;
+                    }
+                });
+
+                if (Object.keys(fontMap).length > 0) {
+                    cleanConfig.theme.extend.fontFamily = fontMap;
+                }
+                if (Object.keys(textSizeMap).length > 0) {
+                    cleanConfig.theme.extend.fontSize = textSizeMap;
+                }
+                if (Object.keys(fontWeightMap).length > 0) {
+                    cleanConfig.theme.extend.fontWeight = fontWeightMap;
+                }
+                if (Object.keys(lineHeightMap).length > 0) {
+                    cleanConfig.theme.extend.lineHeight = lineHeightMap;
+                }
+                if (Object.keys(letterSpacingMap).length > 0) {
+                    cleanConfig.theme.extend.letterSpacing = letterSpacingMap;
+                }
+            }
+
+            // Process border radius
+            if (extractedConfig.theme.borderRadius && Object.keys(extractedConfig.theme.borderRadius).length > 0) {
+                cleanConfig.theme.extend.borderRadius = extractedConfig.theme.borderRadius;
+            }
+
+            // Process screens
+            if (extractedConfig.theme.screens && Object.keys(extractedConfig.theme.screens).length > 0) {
+                cleanConfig.theme.extend.screens = extractedConfig.theme.screens;
+            }
+
+            // Generate the config as a string
+            const configString = `/** @type {import('tailwindcss').Config} */\nmodule.exports = ${JSON.stringify(cleanConfig, null, 2)};`;
+
+            console.log('🎨 Generated Tailwind Config:');
+            console.log('==============================');
+            console.log(configString);
+
+            // Make it available for copying
+            window.generatedTailwindConfig = cleanConfig;
+            window.generatedTailwindConfigString = configString;
+
+            console.log('\n📋 Config string available as: window.generatedTailwindConfigString');
+            console.log('📋 Config object available as: window.generatedTailwindConfig');
+
+            // Auto-copy to clipboard if available
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(configString).then(() => {
+                    console.log('✅ Config copied to clipboard!');
+                }).catch(() => {
+                    console.log('⚠️ Could not copy to clipboard, use window.generatedTailwindConfigString');
+                });
+            }
+
+            return cleanConfig;
+        };
+
+        // Show precision indicators
+        const precisionIndicators = [];
+        if (config.usedClasses.length >= 10) precisionIndicators.push('High class usage');
+        if (totalVars >= 20) precisionIndicators.push('Rich variable system');
+        if (totalCategories >= 5) precisionIndicators.push('Complete design system');
+        if (versionIndicators.version) precisionIndicators.push(`Version ${versionIndicators.version}`);
+
+        if (precisionIndicators.length > 0) {
+            console.log('\n🎯 Precision Indicators:', precisionIndicators.join(' • '));
+        }
+    }
+
+    // Helper functions for enhanced categorization
+    function groupColorsByType(colors) {
+        return {
+            'Primary Colors': colors.filter(c => c.property.includes('primary')),
+            'Secondary Colors': colors.filter(c => c.property.includes('secondary')),
+            'Semantic Colors': colors.filter(c => c.property.includes('destructive') || c.property.includes('muted') || c.property.includes('accent')),
+            'Background/Foreground': colors.filter(c => c.property.includes('background') || c.property.includes('foreground')),
+            'Ring/Border': colors.filter(c => c.property.includes('ring') || c.property.includes('border')),
+            'Other Colors': colors.filter(c => !c.property.includes('primary') && !c.property.includes('secondary') &&
+                                             !c.property.includes('destructive') && !c.property.includes('muted') && !c.property.includes('accent') &&
+                                             !c.property.includes('background') && !c.property.includes('foreground') &&
+                                             !c.property.includes('ring') && !c.property.includes('border'))
+        };
+    }
+
+    function groupSpacingByType(spacing) {
+        return {
+            'Padding': spacing.filter(s => s.property.includes('p-') || s.property.includes('padding')),
+            'Margin': spacing.filter(s => s.property.includes('m-') || s.property.includes('margin')),
+            'Gap': spacing.filter(s => s.property.includes('gap')),
+            'Space': spacing.filter(s => s.property.includes('space'))
+        };
+    }
+
+    function groupTypographyByType(typographyVars) {
+        const groups = {};
+
+        typographyVars.forEach(({ property, value }) => {
+            const cleanProp = property.replace(/^--(?:tw-)?/, '');
+
+            if (cleanProp.includes('font-family') || (cleanProp.startsWith('font-') && !cleanProp.includes('size') && !cleanProp.includes('weight'))) {
+                if (!groups['Font Families']) groups['Font Families'] = [];
+                groups['Font Families'].push({ property, value });
+            }
+            else if (cleanProp.includes('font-size') || (cleanProp.startsWith('text-') && /^\d/.test(cleanProp.replace('text-', '')))) {
+                if (!groups['Font Sizes']) groups['Font Sizes'] = [];
+                groups['Font Sizes'].push({ property, value });
+            }
+            else if (cleanProp.includes('font-weight') || cleanProp.startsWith('font-') && /\b(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)\b/.test(cleanProp)) {
+                if (!groups['Font Weights']) groups['Font Weights'] = [];
+                groups['Font Weights'].push({ property, value });
+            }
+            else if (cleanProp.includes('leading') || cleanProp.includes('line-height')) {
+                if (!groups['Line Heights']) groups['Line Heights'] = [];
+                groups['Line Heights'].push({ property, value });
+            }
+            else if (cleanProp.includes('tracking') || cleanProp.includes('letter-spacing')) {
+                if (!groups['Letter Spacing']) groups['Letter Spacing'] = [];
+                groups['Letter Spacing'].push({ property, value });
+            }
+            else if (cleanProp.includes('text-decoration') || cleanProp.includes('underline') || cleanProp.includes('overline') || cleanProp.includes('line-through')) {
+                if (!groups['Text Decoration']) groups['Text Decoration'] = [];
+                groups['Text Decoration'].push({ property, value });
+            }
+            else if (cleanProp.includes('font-feature') || cleanProp.includes('font-variation') || cleanProp.includes('ligatures') || cleanProp.includes('numerical')) {
+                if (!groups['Font Features']) groups['Font Features'] = [];
+                groups['Font Features'].push({ property, value });
+            }
+            else {
+                if (!groups['Other Typography']) groups['Other Typography'] = [];
+                groups['Other Typography'].push({ property, value });
+            }
+        });
+
+        return groups;
+    }
+
+    function categorizeClasses(classes) {
+        return {
+            'Layout': classes.filter(c => c.startsWith('flex') || c.startsWith('grid') || c.startsWith('block') || c.startsWith('hidden')),
+            'Spacing': classes.filter(c => c.startsWith('p-') || c.startsWith('m-') || c.startsWith('space-')),
+            'Colors': classes.filter(c => c.startsWith('bg-') || c.startsWith('text-') || c.startsWith('border-')),
+            'Typography': classes.filter(c =>
+                c.startsWith('text-') || c.startsWith('font-') || c.startsWith('leading-') ||
+                c.startsWith('tracking-') || c.startsWith('whitespace-') || c.startsWith('break-') ||
+                c === 'truncate' || c === 'italic' || c === 'underline' || c === 'line-through'
+            ),
+            'Effects': classes.filter(c => c.startsWith('shadow') || c.startsWith('opacity') || c.startsWith('blur')),
+            'Borders': classes.filter(c => c.startsWith('rounded') || c.startsWith('border')),
+            'Responsive': classes.filter(c => /^(sm|md|lg|xl|2xl):/.test(c)),
+            'States': classes.filter(c => c.startsWith('hover:') || c.startsWith('focus:') || c.startsWith('dark:'))
+        };
+    }
+
+    function detectTailwindVersion(config) {
+        // Version detection based on patterns
+        const indicators = {
+            'v4': [
+                '--color-', // v4 uses --color-* variables
+                '--font-', // v4 font variables
+                '--radius-', // v4 radius variables
+                'oklch(', // v4 uses modern color spaces
+                '@theme', // v4 uses @theme directive
+                '@import "tailwindcss"' // v4 import syntax
+            ],
+            'v3': [
+                '--tw-ring',
+                '--tw-shadow',
+                'hsl(',
+                'backdrop-blur',
+                '@tailwind'
+            ],
+            'v2': [
+                '--tw-shadow',
+                'rgb(',
+                'filter',
+                '@apply'
+            ]
+        };
+
+        let bestMatch = null;
+        let maxConfidence = 0;
+        let versionScores = {};
+
+        Object.entries(indicators).forEach(([version, patterns]) => {
+            let confidence = 0;
+            patterns.forEach(pattern => {
+                // Check CSS variables
+                const hasVar = Object.values(config.cssVariables || {}).some(group =>
+                    group?.some(v => v.property.includes(pattern) || v.value.includes(pattern))
+                );
+                if (hasVar) confidence++;
+
+                // Check classes
+                const hasClass = config.usedClasses.some(cls => cls.includes(pattern.replace('--tw-', '').replace('--color-', '').replace('--font-', '').replace('--radius-', '')));
+                if (hasClass) confidence++;
+
+                // Check for @theme or @import in style tags (v4 specific)
+                if (pattern.startsWith('@')) {
+                    const styleTags = Array.from(document.querySelectorAll('style'));
+                    const hasDirective = styleTags.some(style => {
+                        try {
+                            return style.textContent && style.textContent.includes(pattern);
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                    if (hasDirective) confidence += 2; // Higher weight for directive detection
+                }
+            });
+
+            versionScores[version] = confidence;
+            if (confidence > maxConfidence) {
+                maxConfidence = confidence;
+                bestMatch = version;
+            }
+        });
+
+        // Special case: if we have v4 indicators, strongly prefer v4
+        if (versionScores['v4'] >= 2) {
+            bestMatch = 'v4';
+            maxConfidence = versionScores['v4'];
+        }
+
+        let confidence = 'Low';
+        if (maxConfidence >= 4) confidence = 'High';
+        else if (maxConfidence >= 2) confidence = 'Medium';
+
+        return {
+            version: bestMatch,
+            confidence: confidence,
+            scores: versionScores
+        };
+    }
+
+    // Run extraction
+    try {
+        const config = extractTailwindConfig();
+        displayResults(config);
+    } catch (error) {
+        console.error('❌ Error extracting Tailwind config:', error);
+    }
+
+    console.log('\n✨ Extraction complete!');
+})();

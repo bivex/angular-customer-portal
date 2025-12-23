@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Портал клиентов Keygen",
+    "welcome": "Добро пожаловать в портал клиентов Keygen"
+  },
+  "auth": {
+    "signIn": "Войти",
+    "signOut": "Выйти",
+    "signUp": "Регистрация",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "name": "Полное имя",
+    "emailPlaceholder": "Введите ваш email",
+    "passwordPlaceholder": "Введите ваш пароль",
+    "namePlaceholder": "Введите ваше полное имя",
+    "rememberMe": "Запомнить меня",
+    "forgotPassword": "Забыли пароль?",
+    "signInWith": "Войти через {{provider}}",
+    "requiredFields": "Пожалуйста, заполните все обязательные поля",
+    "loginFailed": "Ошибка входа. Попробуйте еще раз.",
+    "noAccount": "Нет аккаунта?",
+    "haveAccount": "Уже есть аккаунт?",
+    "createAccount": "Создать аккаунт",
+    "joinUs": "Присоединяйтесь к нам сегодня",
+    "nameRequired": "Полное имя обязательно",
+    "emailRequired": "Электронная почта обязательна",
+    "emailInvalid": "Пожалуйста, введите корректный email",
+    "passwordRequired": "Пароль обязателен",
+    "passwordMinLength": "Пароль должен содержать минимум 8 символов",
+    "registrationError": "Ошибка регистрации",
+    "authError": "Ошибка аутентификации"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "or": "или"
+  },
+  "dashboard": {
+    "title": "Панель управления",
+    "welcome": "Добро пожаловать обратно, {{name}}!",
+    "welcome.morning": "Доброе утро, {{name}}!",
+    "welcome.afternoon": "Добрый день, {{name}}!",
+    "welcome.evening": "Добрый вечер, {{name}}!",
+    "motivation": {
+      "ready": "Готовы начать?",
+      "productive": "Давайте будем продуктивными сегодня!",
+      "explore": "Время исследовать новые возможности!"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 Портал клиентов Keygen. Все права защищены."
+  }
+}
+

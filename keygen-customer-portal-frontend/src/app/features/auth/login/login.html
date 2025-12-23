@@ -1,0 +1,306 @@
+<div
+  class="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4 sm:p-6 lg:p-8 relative"
+>
+  <!-- Language Picker in top-right corner -->
+  <div class="absolute top-6 right-6 z-10">
+    <app-lang-picker
+      class="min-w-[48px] min-h-[48px] flex items-center justify-center"
+    ></app-lang-picker>
+  </div>
+
+  <div class="w-full max-w-md space-y-8">
+    <!-- Header Section -->
+    <div class="text-center space-y-12">
+      <div
+        class="mx-auto h-12 w-12 flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-2xl transform hover:scale-105 transition-transform duration-300 min-w-[48px] min-h-[48px]"
+      >
+        <z-icon
+          zType="shield"
+          class="text-white text-xl w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center"
+        ></z-icon>
+      </div>
+      <div class="space-y-4">
+        <h1 class="text-4xl font-bold text-foreground tracking-tight">
+          {{ welcomeMessage }}
+        </h1>
+        <p class="text-xl text-muted-foreground font-medium">
+          {{ 'auth.signIn' | translate }}
+        </p>
+        <!-- V2 Authentication Indicator -->
+        <div
+          class="flex items-center justify-center gap-4 px-4 py-4 bg-primary/10 border border-primary/20 rounded-lg min-h-[48px] cursor-pointer"
+        >
+          <z-icon
+            zType="shield"
+            class="text-primary text-xl w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center"
+          ></z-icon>
+          <span class="text-sm font-medium text-primary min-h-[48px] flex items-center">
+            Enterprise Authentication Active
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Form Card -->
+    <div
+      class="rounded-2xl border bg-card text-card-foreground shadow-xl border-border backdrop-blur-sm"
+    >
+      <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="p-8 space-y-8">
+        <!-- Email Field -->
+        <div class="space-y-4">
+          <label
+            z-label
+            for="email"
+            class="flex items-center gap-2 py-3 min-h-[48px] cursor-pointer"
+          >
+            <z-icon
+              zType="mail"
+              class="text-xl min-w-[48px] min-h-[48px] flex items-center justify-center"
+            ></z-icon>
+            {{ 'auth.email' | translate }}
+          </label>
+          <div class="relative">
+            <input
+              z-input
+              id="email"
+              name="email"
+              type="email"
+              [(ngModel)]="credentials.email"
+              required
+              email
+              #emailField="ngModel"
+              placeholder="{{ 'auth.emailPlaceholder' | translate }}"
+              [disabled]="isLoading"
+              autocomplete="email"
+              (keyup.enter)="passwordInput.focus()"
+              aria-label="Email address"
+              aria-describedby="email-error"
+              [aria-invalid]="emailField.invalid && emailField.touched"
+            />
+            @if (emailField.invalid && emailField.touched) {
+              <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                <z-icon
+                  zType="circle-alert"
+                  class="text-destructive w-6 h-6 min-w-[48px] min-h-[48px] flex items-center justify-center"
+                ></z-icon>
+              </div>
+            }
+          </div>
+          @if (emailField.invalid && emailField.touched) {
+            <div
+              id="email-error"
+              class="text-sm text-destructive flex items-center gap-2 py-1"
+              role="alert"
+              aria-live="polite"
+            >
+              <z-icon
+                zType="circle-alert"
+                class="text-destructive w-6 h-6 min-w-[48px] min-h-[48px] flex items-center justify-center"
+              ></z-icon>
+              <span>{{
+                emailField.errors?.['required']
+                  ? ('auth.emailRequired' | translate)
+                  : ('auth.emailInvalid' | translate)
+              }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-4">
+          <label
+            z-label
+            for="password"
+            class="flex items-center gap-2 py-3 min-h-[48px] cursor-pointer"
+          >
+            <z-icon
+              zType="lock"
+              class="text-xl min-w-[48px] min-h-[48px] flex items-center justify-center"
+            ></z-icon>
+            {{ 'auth.password' | translate }}
+          </label>
+          <div class="relative">
+            <input
+              z-input
+              id="password"
+              name="password"
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="credentials.password"
+              required
+              #passwordField="ngModel"
+              #passwordInput
+              placeholder="{{ 'auth.passwordPlaceholder' | translate }}"
+              [disabled]="isLoading"
+              autocomplete="current-password"
+              aria-label="Password"
+              aria-describedby="password-error"
+              [aria-invalid]="passwordField.invalid && passwordField.touched"
+              class="!autofill:bg-muted !autofill:text-foreground"
+            />
+            <button
+              z-button
+              type="button"
+              zType="ghost"
+              zSize="default"
+              class="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 min-w-[48px] min-h-[48px]"
+              (click)="togglePasswordVisibility()"
+              [disabled]="isLoading"
+              aria-label="Toggle password visibility"
+              title="Click to {{ showPassword ? 'hide' : 'show' }} your password"
+            >
+              <z-icon
+                [zType]="showPassword ? 'eye-off' : 'eye'"
+                class="text-xl w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center"
+              ></z-icon>
+            </button>
+          </div>
+          @if (passwordField.invalid && passwordField.touched) {
+            <div
+              id="password-error"
+              class="text-sm text-destructive flex items-center gap-2 py-1"
+              role="alert"
+              aria-live="polite"
+            >
+              <z-icon
+                zType="circle-alert"
+                class="text-destructive w-6 h-6 min-w-[48px] min-h-[48px] flex items-center justify-center"
+              ></z-icon>
+              <span>{{ 'auth.passwordRequired' | translate }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- V2 Security Features -->
+        <div class="space-y-4">
+          <!-- Device Fingerprint Status -->
+          <div
+            class="flex items-center gap-4 px-4 py-3 bg-muted/50 rounded-lg border min-h-[48px] cursor-pointer"
+          >
+            <z-icon
+              zType="smartphone"
+              class="text-primary text-xl min-w-[48px] min-h-[48px] flex items-center justify-center"
+            ></z-icon>
+            <span class="text-sm text-muted-foreground min-h-[48px] flex items-center">
+              Device fingerprint captured for enhanced security
+            </span>
+          </div>
+        </div>
+
+        <!-- Remember Me & Forgot Password -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2 cursor-pointer py-3 min-h-[48px]">
+            <span
+              z-checkbox
+              size="lg"
+              class="w-12 h-12"
+              [(ngModel)]="rememberMe"
+              name="rememberMe"
+              [disabled]="isLoading"
+              title="Keep me signed in for 30 days with enhanced session security"
+            ></span>
+            <span
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 min-h-[48px] flex items-center"
+              >{{ 'auth.rememberMe' | translate }}</span
+            >
+          </div>
+          <button
+            z-button
+            variant="link"
+            type="button"
+            class="text-sm px-4 py-3 min-h-[48px] min-w-[48px] flex items-center justify-center"
+            title="Click here to reset your password. You'll receive an email with reset instructions"
+          >
+            {{ 'auth.forgotPassword' | translate }}
+          </button>
+        </div>
+
+        <!-- Error Message -->
+        @if (errorMessage) {
+          <z-alert variant="destructive" id="login-error" role="alert" aria-live="assertive">
+            <z-icon
+              zType="circle-alert"
+              class="h-6 w-6 min-w-[48px] min-h-[48px] flex items-center justify-center"
+            ></z-icon>
+            <z-alert-title>{{ 'auth.authError' | translate }}</z-alert-title>
+            <z-alert-description>{{ errorMessage }}</z-alert-description>
+          </z-alert>
+        }
+
+        <!-- Submit Button -->
+        <z-button
+          type="submit"
+          size="lg"
+          variant="default"
+          class="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl min-h-[44px]"
+          [loading]="isLoading"
+          [attr.aria-describedby]="errorMessage ? 'login-error' : null"
+          aria-label="{{ isLoading ? 'Signing in...' : 'Sign in to your account' }}"
+          title="{{
+            isLoading
+              ? 'Please wait while we sign you in...'
+              : 'Click to sign in with your credentials'
+          }}"
+          (click)="onLogin()"
+        >
+          @if (!isLoading) {
+            <z-icon
+              zType="log-in"
+              class="mr-2 text-xl w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center"
+            ></z-icon>
+          }
+          @if (isLoading) {
+            <z-icon
+              zType="refresh-ccw"
+              class="animate-spin mr-2 text-xl w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center"
+            ></z-icon>
+          }
+          <span>{{
+            isLoading ? ('common.loading' | translate) : ('auth.signIn' | translate)
+          }}</span>
+        </z-button>
+      </form>
+
+      <!-- Separator -->
+      <div class="relative my-8 min-h-[48px]">
+        <div class="absolute inset-0 flex items-center">
+          <span class="w-full border-t border-border h-[48px]"></span>
+        </div>
+        <div class="relative flex justify-center text-sm uppercase py-2">
+          <span class="bg-card px-4 text-muted-foreground font-medium">{{
+            'common.or' | translate
+          }}</span>
+        </div>
+      </div>
+
+      <!-- Sign Up Link -->
+      <div class="text-center min-h-[48px] flex items-center justify-center">
+        <p class="text-sm text-muted-foreground">
+          {{ 'auth.noAccount' | translate }}
+          <button
+            z-button
+            variant="link"
+            type="button"
+            [routerLink]="'/register'"
+            class="px-4 py-3 font-semibold text-primary hover:text-primary/80 transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
+            title="Don't have an account yet? Click here to create a new account"
+          >
+            {{ 'auth.createAccount' | translate }}
+          </button>
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="text-center text-sm text-muted-foreground py-3 min-h-[48px] flex items-center justify-center"
+    >
+      <p class="flex items-center justify-center gap-2 py-1">
+        <z-icon
+          zType="shield"
+          class="text-xl min-w-[48px] min-h-[48px] flex items-center justify-center"
+        ></z-icon>
+        {{ 'footer.copyright' | translate }}
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,149 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+bun-debug.log*
+bun-error.log*
+
+# Build outputs
+dist/
+build/
+out/
+tmp/
+out-tsc/
+bazel-out/
+.angular/
+
+# Testing and coverage
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+test_results/
+playwright-report/
+html-report/
+allure-results/
+junit-results/
+__screenshots__/
+
+# Logs and debugging
+*.log
+logs/
+error-logs/
+*.pid
+pids/
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.ci
+.env.test
+.env.development
+.env.production
+.env.staging
+
+# Security and secrets
+secrets/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.vite/
+.turbo/
+.sass-cache/
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Package manager files
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.npm
+
+# Build tools
+.grunt
+bower_components
+jspm_packages
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.vscode-test
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*.old
+backup/
+*.tmp
+*.temp
+
+# Angular specific
+.connect.lock
+libpeerconnection.log
+testem.log
+/typings
+/angular/cache
+
+# Security reports
+angular_app_results.fpr
+angular_security_report.pdf
+angular_owasp_report.pdf
+bundle-analysis.html
+
+# Husky
+.husky/_
+
+# Lock files (usually keep one primary, but ignore others if needed)
+# Uncomment if you want to ignore specific lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+# bun.lock
+
+# Temporary and generated files
+*.tgz
+*.tar.gz

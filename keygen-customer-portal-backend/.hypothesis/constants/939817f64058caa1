@@ -1,0 +1,4 @@
+# file: /opt/homebrew/Caskroom/miniconda/base/bin/schemathesis
+# hypothesis_version: 6.148.7
+
+['.exe', '__main__']

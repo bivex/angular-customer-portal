@@ -1,0 +1,497 @@
+<div class="min-h-screen bg-background text-foreground p-6">
+  <!-- Header -->
+  <div class="max-w-6xl mx-auto mb-8">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-foreground mb-4">🎨 Theme Picker</h1>
+      <p class="text-xl text-muted-foreground">
+        Choose your perfect color scheme for the application
+      </p>
+    </div>
+
+    <!-- Current Theme Display -->
+    <div class="bg-card border border-border rounded-xl p-6 mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-semibold text-card-foreground mb-2">
+            Current Theme: {{ getCurrentTheme()?.name }}
+          </h2>
+          <p class="text-muted-foreground">{{ getCurrentTheme()?.description }}</p>
+        </div>
+        <div class="flex gap-2">
+          <div class="w-6 h-6 rounded-full bg-primary"></div>
+          <div class="w-6 h-6 rounded-full bg-secondary"></div>
+          <div class="w-6 h-6 rounded-full bg-accent"></div>
+          <div class="w-6 h-6 rounded-full bg-background border border-border"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div
+        *ngFor="let theme of themes"
+        class="relative group cursor-pointer"
+        (click)="selectTheme(theme.id)"
+      >
+        <div
+          class="bg-card border border-border rounded-xl p-6 transition-all duration-300 hover:shadow-lg"
+        >
+          <!-- Selected indicator -->
+          <div *ngIf="currentTheme === theme.id" class="absolute -top-2 -right-2 z-10">
+            <div class="bg-green-500 text-white rounded-full p-2 shadow-lg">✓</div>
+          </div>
+
+          <div class="p-0">
+            <!-- Theme Preview -->
+            <div class="mb-4">
+              <div class="bg-card border border-border rounded-lg p-4 space-y-3">
+                <!-- Color swatches -->
+                <div class="flex gap-2 mb-3">
+                  <div class="flex-1 h-8 rounded bg-primary"></div>
+                  <div class="flex-1 h-8 rounded bg-secondary"></div>
+                  <div class="flex-1 h-8 rounded bg-accent"></div>
+                </div>
+
+                <!-- Mock UI elements -->
+                <div class="space-y-2">
+                  <div class="h-2 bg-primary rounded"></div>
+                  <div class="h-2 bg-secondary rounded w-3/4"></div>
+                  <div class="h-2 bg-accent rounded w-1/2"></div>
+                </div>
+
+                <!-- Button mock -->
+                <div class="flex gap-2 mt-4">
+                  <div class="h-8 w-16 bg-primary rounded"></div>
+                  <div class="h-8 w-20 bg-secondary rounded border border-border"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Theme Info -->
+            <div class="text-center">
+              <h3 class="text-xl font-semibold text-card-foreground mb-2">
+                {{ theme.name }}
+              </h3>
+              <p class="text-muted-foreground text-sm mb-4">
+                {{ theme.description }}
+              </p>
+
+              <button
+                class="w-full px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                [disabled]="currentTheme === theme.id"
+              >
+                {{ currentTheme === theme.id ? 'Selected' : 'Select Theme' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ocean Vibe Special Section -->
+    <div
+      *ngIf="currentTheme === 'ocean-vibe'"
+      class="mt-8 bg-ocean-vibe-50 border border-ocean-vibe-200 rounded-xl p-8"
+    >
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-ocean-vibe-900 mb-2">🌊 Ocean Vibe Color Palette</h2>
+        <p class="text-ocean-vibe-700">Explore the full range of ocean-inspired colors</p>
+      </div>
+
+      <div class="grid grid-cols-6 gap-3">
+        <div
+          *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]"
+          class="text-center"
+        >
+          <div
+            class="w-full h-12 rounded-lg bg-ocean-vibe-{{
+              shade
+            }} border border-ocean-vibe-300 mb-2 shadow-sm"
+          ></div>
+          <p class="text-xs font-medium text-ocean-vibe-900">{{ shade }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white/50 rounded-lg border border-ocean-vibe-200">
+        <h3 class="text-lg font-semibold text-ocean-vibe-900 mb-3">Usage Examples</h3>
+        <div class="space-y-3">
+          <div class="flex gap-4">
+            <button class="px-4 py-2 bg-ocean-vibe-500 hover:bg-ocean-vibe-600 text-white rounded">
+              Primary Button
+            </button>
+            <button
+              class="px-4 py-2 border border-ocean-vibe-300 text-ocean-vibe-700 hover:bg-ocean-vibe-50 rounded"
+            >
+              Outline Button
+            </button>
+          </div>
+          <div
+            class="bg-gradient-to-r from-ocean-vibe-400 to-ocean-vibe-600 text-white p-4 rounded-lg"
+          >
+            <p class="font-medium">Ocean Vibe Gradient Background</p>
+          </div>
+          <p class="text-ocean-vibe-700">
+            This text uses the
+            <code class="bg-ocean-vibe-100 px-2 py-1 rounded text-ocean-vibe-900"
+              >text-ocean-vibe-700</code
+            >
+            class
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calm Energy Special Section -->
+    <div
+      *ngIf="currentTheme === 'calm-energy'"
+      class="mt-8 bg-calm-energy-50 border border-calm-energy-300 rounded-xl p-8"
+    >
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-calm-energy-900 mb-2">
+          ⚡ Calm Energy Color Palette
+        </h2>
+        <p class="text-calm-energy-700">Explore the balanced gray tones</p>
+      </div>
+
+      <div class="grid grid-cols-6 gap-3">
+        <div
+          *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]"
+          class="text-center"
+        >
+          <div
+            class="w-full h-12 rounded-lg bg-calm-energy-{{
+              shade
+            }} border border-calm-energy-400 mb-2 shadow-sm"
+          ></div>
+          <p class="text-xs font-medium text-calm-energy-900">{{ shade }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white/50 rounded-lg border border-calm-energy-300">
+        <h3 class="text-lg font-semibold text-calm-energy-900 mb-3">Usage Examples</h3>
+        <div class="space-y-3">
+          <div class="flex gap-4">
+            <button
+              class="px-4 py-2 bg-calm-energy-600 hover:bg-calm-energy-700 text-white rounded"
+            >
+              Primary Button
+            </button>
+            <button
+              class="px-4 py-2 border border-calm-energy-400 text-calm-energy-800 hover:bg-calm-energy-50 rounded"
+            >
+              Outline Button
+            </button>
+          </div>
+          <div
+            class="bg-gradient-to-r from-calm-energy-300 to-calm-energy-600 text-white p-4 rounded-lg"
+          >
+            <p class="font-medium">Calm Energy Gradient Background</p>
+          </div>
+          <p class="text-calm-energy-800">
+            This text uses the
+            <code class="bg-calm-energy-100 px-2 py-1 rounded text-calm-energy-900"
+              >text-calm-energy-800</code
+            >
+            class
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deep Hue Special Section -->
+    <div
+      *ngIf="currentTheme === 'deep-hue'"
+      class="mt-8 bg-deep-hue-50 border border-deep-hue-200 rounded-xl p-8"
+    >
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-deep-hue-900 mb-2">🎨 Deep Hue Color Palette</h2>
+        <p class="text-deep-hue-700">Explore the rich and deep color tones</p>
+      </div>
+
+      <div class="grid grid-cols-6 gap-3">
+        <div
+          *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]"
+          class="text-center"
+        >
+          <div
+            class="w-full h-12 rounded-lg bg-deep-hue-{{
+              shade
+            }} border border-deep-hue-300 mb-2 shadow-sm"
+          ></div>
+          <p class="text-xs font-medium text-deep-hue-900">{{ shade }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white/50 rounded-lg border border-deep-hue-200">
+        <h3 class="text-lg font-semibold text-deep-hue-900 mb-3">Usage Examples</h3>
+        <div class="space-y-3">
+          <div class="flex gap-4">
+            <button class="px-4 py-2 bg-deep-hue-600 hover:bg-deep-hue-700 text-white rounded">
+              Primary Button
+            </button>
+            <button
+              class="px-4 py-2 border border-deep-hue-300 text-deep-hue-700 hover:bg-deep-hue-50 rounded"
+            >
+              Outline Button
+            </button>
+          </div>
+          <div class="bg-gradient-to-r from-deep-hue-400 to-deep-hue-600 text-white p-4 rounded-lg">
+            <p class="font-medium">Deep Hue Gradient Background</p>
+          </div>
+          <p class="text-deep-hue-800">
+            This text uses the
+            <code class="bg-deep-hue-100 px-2 py-1 rounded text-deep-hue-900"
+              >text-deep-hue-800</code
+            >
+            class
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desert Vision Mix Special Section -->
+    <div
+      *ngIf="currentTheme === 'desert-vision-mix'"
+      class="mt-8 bg-desert-vision-mix-50 border border-desert-vision-mix-200 rounded-xl p-8"
+    >
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-desert-vision-mix-900 mb-2">
+          🏜️ Desert Vision Mix Color Palette
+        </h2>
+        <p class="text-desert-vision-mix-700">Explore the warm desert-inspired colors</p>
+      </div>
+
+      <div class="grid grid-cols-6 gap-3">
+        <div
+          *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]"
+          class="text-center"
+        >
+          <div
+            class="w-full h-12 rounded-lg bg-desert-vision-mix-{{
+              shade
+            }} border border-desert-vision-mix-300 mb-2 shadow-sm"
+          ></div>
+          <p class="text-xs font-medium text-desert-vision-mix-900">{{ shade }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white/50 rounded-lg border border-desert-vision-mix-200">
+        <h3 class="text-lg font-semibold text-desert-vision-mix-900 mb-3">Usage Examples</h3>
+        <div class="space-y-3">
+          <div class="flex gap-4">
+            <button
+              class="px-4 py-2 bg-desert-vision-mix-600 hover:bg-desert-vision-mix-700 text-white rounded"
+            >
+              Primary Button
+            </button>
+            <button
+              class="px-4 py-2 border border-desert-vision-mix-300 text-desert-vision-mix-700 hover:bg-desert-vision-mix-50 rounded"
+            >
+              Outline Button
+            </button>
+          </div>
+          <div
+            class="bg-gradient-to-r from-desert-vision-mix-400 to-desert-vision-mix-600 text-white p-4 rounded-lg"
+          >
+            <p class="font-medium">Desert Vision Mix Gradient Background</p>
+          </div>
+          <p class="text-desert-vision-mix-800">
+            This text uses the
+            <code class="bg-desert-vision-mix-100 px-2 py-1 rounded text-desert-vision-mix-900"
+              >text-desert-vision-mix-800</code
+            >
+            class
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gentle Blend Series Special Section -->
+    <div
+      *ngIf="currentTheme === 'gentle-blend-series'"
+      class="mt-8 bg-gentle-blend-series-50 border border-gentle-blend-series-200 rounded-xl p-8"
+    >
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-gentle-blend-series-900 mb-2">
+          🌸 Gentle Blend Series Color Palette
+        </h2>
+        <p class="text-gentle-blend-series-700">Explore the soft and gentle color transitions</p>
+      </div>
+
+      <div class="grid grid-cols-8 gap-2">
+        <div
+          *ngFor="
+            let shade of [
+              25, 50, 75, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750,
+              800, 850, 900, 925, 950,
+            ]
+          "
+          class="text-center"
+        >
+          <div
+            class="w-full h-8 rounded bg-gentle-blend-series-{{
+              shade
+            }} border border-gentle-blend-series-300 mb-1 shadow-sm"
+          ></div>
+          <p class="text-xs font-medium text-gentle-blend-series-900">{{ shade }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white/50 rounded-lg border border-gentle-blend-series-200">
+        <h3 class="text-lg font-semibold text-gentle-blend-series-900 mb-3">Usage Examples</h3>
+        <div class="space-y-3">
+          <div class="flex gap-4">
+            <button
+              class="px-4 py-2 bg-gentle-blend-series-600 hover:bg-gentle-blend-series-700 text-white rounded"
+            >
+              Primary Button
+            </button>
+            <button
+              class="px-4 py-2 border border-gentle-blend-series-300 text-gentle-blend-series-700 hover:bg-gentle-blend-series-50 rounded"
+            >
+              Outline Button
+            </button>
+          </div>
+          <div
+            class="bg-gradient-to-r from-gentle-blend-series-400 to-gentle-blend-series-600 text-white p-4 rounded-lg"
+          >
+            <p class="font-medium">Gentle Blend Series Gradient Background</p>
+          </div>
+          <p class="text-gentle-blend-series-800">
+            This text uses the
+            <code class="bg-gentle-blend-series-100 px-2 py-1 rounded text-gentle-blend-series-900"
+              >text-gentle-blend-series-800</code
+            >
+            class
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delicate Blend Collection Design Tokens Special Section -->
+    <div
+      *ngIf="currentTheme === 'delicate-blend-collection'"
+      class="mt-8 bg-delicate-blend-collection-50 border border-delicate-blend-collection-200 rounded-xl p-8"
+    >
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-delicate-blend-collection-900 mb-2">
+          🎨 Delicate Blend Collection Design Tokens
+        </h2>
+        <p class="text-delicate-blend-collection-700">
+          Explore the elegant and delicate color palette with soft purple transitions
+        </p>
+      </div>
+
+      <div class="grid grid-cols-6 gap-3">
+        <div
+          *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]"
+          class="text-center"
+        >
+          <div
+            class="w-full h-12 rounded-lg bg-delicate-blend-collection-{{
+              shade
+            }} border border-delicate-blend-collection-300 mb-2 shadow-sm"
+          ></div>
+          <p class="text-xs font-medium text-delicate-blend-collection-900">{{ shade }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white/50 rounded-lg border border-delicate-blend-collection-200">
+        <h3 class="text-lg font-semibold text-delicate-blend-collection-900 mb-3">
+          Usage Examples
+        </h3>
+        <div class="space-y-3">
+          <div class="flex gap-4">
+            <button
+              class="px-4 py-2 bg-delicate-blend-collection-600 hover:bg-delicate-blend-collection-700 text-white rounded"
+            >
+              Primary Button
+            </button>
+            <button
+              class="px-4 py-2 border border-delicate-blend-collection-300 text-delicate-blend-collection-700 hover:bg-delicate-blend-collection-50 rounded"
+            >
+              Outline Button
+            </button>
+          </div>
+          <div
+            class="bg-gradient-to-r from-delicate-blend-collection-400 to-delicate-blend-collection-600 text-white p-4 rounded-lg"
+          >
+            <p class="font-medium">Delicate Blend Collection Gradient Background</p>
+          </div>
+          <p class="text-delicate-blend-collection-800">
+            This text uses the
+            <code
+              class="bg-delicate-blend-collection-100 px-2 py-1 rounded text-delicate-blend-collection-900"
+              >text-delicate-blend-collection-800</code
+            >
+            class
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vibrant Aura Design Tokens Special Section -->
+    <div
+      *ngIf="currentTheme === 'vibrant-aura'"
+      class="mt-8 bg-vibrant-aura-50 border border-vibrant-aura-200 rounded-xl p-8"
+    >
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-vibrant-aura-900 mb-2">
+          ✨ Vibrant Aura Design Tokens
+        </h2>
+        <p class="text-vibrant-aura-700">
+          Explore the dynamic and vibrant color palette with energetic transitions
+        </p>
+      </div>
+
+      <div class="grid grid-cols-8 gap-2">
+        <div
+          *ngFor="
+            let shade of [
+              25, 50, 75, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750,
+              800, 850, 900, 925, 950,
+            ]
+          "
+          class="text-center"
+        >
+          <div
+            class="w-full h-8 rounded bg-vibrant-aura-{{
+              shade
+            }} border border-vibrant-aura-300 mb-1 shadow-sm"
+          ></div>
+          <p class="text-xs font-medium text-vibrant-aura-900">{{ shade }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-white/50 rounded-lg border border-vibrant-aura-200">
+        <h3 class="text-lg font-semibold text-vibrant-aura-900 mb-3">Usage Examples</h3>
+        <div class="space-y-3">
+          <div class="flex gap-4">
+            <button
+              class="px-4 py-2 bg-vibrant-aura-600 hover:bg-vibrant-aura-700 text-white rounded"
+            >
+              Primary Button
+            </button>
+            <button
+              class="px-4 py-2 border border-vibrant-aura-300 text-vibrant-aura-700 hover:bg-vibrant-aura-50 rounded"
+            >
+              Outline Button
+            </button>
+          </div>
+          <div
+            class="bg-gradient-to-r from-vibrant-aura-400 to-vibrant-aura-600 text-white p-4 rounded-lg"
+          >
+            <p class="font-medium">Vibrant Aura Gradient Background</p>
+          </div>
+          <p class="text-vibrant-aura-800">
+            This text uses the
+            <code class="bg-vibrant-aura-100 px-2 py-1 rounded text-vibrant-aura-900"
+              >text-vibrant-aura-800</code
+            >
+            class
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
